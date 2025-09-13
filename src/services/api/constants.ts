@@ -4,4 +4,5 @@ export const InstagramQueryKey = {
 
 export const ServerEndpoints = {
   GetByPostURL: `/video`,
+  Download: `/download`,
 } as const;
