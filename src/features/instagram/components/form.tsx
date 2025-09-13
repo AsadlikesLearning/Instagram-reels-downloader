@@ -6,7 +6,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { Download, Loader2 } from "lucide-react";
+import { Clipboard, ArrowRight, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -25,7 +25,7 @@ import { useVideoInfo } from "@/services/api/queries";
 
 const formSchema = z.object({
   postUrl: z.string().url({
-    message: "Provide a valid Instagram post link",
+    message: "Provide a valid video link",
   }),
 });
 
@@ -40,6 +40,19 @@ export function InstagramVideoForm() {
   const { error, isPending, mutateAsync: getVideoInfo } = useVideoInfo();
 
   const httpError = getHttpErrorMessage(error);
+
+  // Handle paste from clipboard
+  const handlePaste = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text) {
+        form.setValue("postUrl", text);
+      }
+    } catch (err) {
+      console.log("Failed to read clipboard:", err);
+      // If clipboard API fails, we'll just ignore it silently
+    }
+  };
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const { postUrl } = values;
@@ -58,52 +71,77 @@ export function InstagramVideoForm() {
   }
   
   return (
-    <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="bg-accent/20 my-4 flex w-full max-w-2xl flex-col items-center rounded-lg border px-4 pb-16 pt-8 shadow-md sm:px-8"
-      >
-        <div className="mb-2 h-6 w-full px-2 text-start text-red-500">
-          {httpError}
-        </div>
-        <div className="relative mb-6 flex w-full flex-col items-center gap-4 sm:flex-row">
-          <FormField
-            control={form.control}
-            name="postUrl"
-            render={({ field }) => (
-              <FormItem className="w-full">
-                <FormControl>
-                  <Input
-                    disabled={isPending}
-                    type="url"
-                    placeholder="Paste your Instagram link here..."
-                    className="h-12 w-full sm:pr-28"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <Button
-            disabled={isPending}
-            type="submit"
-            className="right-1 top-1 w-full sm:absolute sm:w-fit"
-          >
-            {isPending ? (
-              <Loader2 className="mr-2 animate-spin" />
-            ) : (
-              <Download className="mr-2" />
-            )}
-            Download
-          </Button>
-        </div>
-        <p className="text-muted-foreground text-center text-xs">
-          If the download opens a new page, right click the video and then click{" "}
-          Save as video.
-        </p>
-      </form>
-    </Form>
+    <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 backdrop-blur-sm">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          {/* Error Message */}
+          {httpError && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-600 text-sm">
+              {httpError}
+            </div>
+          )}
+
+          {/* Input and Buttons */}
+          <div className="space-y-4">
+            <FormField
+              control={form.control}
+              name="postUrl"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input
+                      disabled={isPending}
+                      type="url"
+                      placeholder="Paste video URL here"
+                      className="h-14 text-lg rounded-full border-gray-200 px-6 focus:border-purple-400 focus:ring-purple-400 transition-colors"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage className="ml-6 text-sm" />
+                </FormItem>
+              )}
+            />
+
+            {/* Buttons */}
+            <div className="flex gap-3 justify-center">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handlePaste}
+                disabled={isPending}
+                className="rounded-full px-6 py-3 border-purple-200 text-purple-600 hover:bg-purple-50 hover:border-purple-300 transition-colors"
+              >
+                <Clipboard className="mr-2 h-4 w-4" />
+                Paste
+              </Button>
+              
+              <Button
+                type="submit"
+                disabled={isPending || !form.getValues("postUrl")}
+                className="rounded-full px-8 py-3 bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-500 hover:to-pink-500 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                {isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    Start
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+
+          {/* Help Text */}
+          <p className="text-gray-500 text-center text-sm">
+            Paste a link from TikTok, Instagram, YouTube, Facebook, or other platforms
+          </p>
+        </form>
+      </Form>
+    </div>
   );
 }
 
