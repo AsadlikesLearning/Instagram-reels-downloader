@@ -1,0 +1,105 @@
+import Link from "next/link";
+import { ArrowLeft, CheckCircle } from "lucide-react";
+
+export default function SupportedPage() {
+  const supportedPlatforms = [
+    {
+      name: "Instagram",
+      description: "Download videos, reels, and IGTV content",
+      status: "Full Support"
+    },
+    {
+      name: "TikTok",
+      description: "Download TikTok videos without watermarks",
+      status: "Full Support"
+    },
+    {
+      name: "YouTube",
+      description: "Download YouTube videos in various qualities",
+      status: "Full Support"
+    },
+    {
+      name: "Facebook",
+      description: "Download Facebook videos and stories",
+      status: "Full Support"
+    },
+    {
+      name: "X (Twitter)",
+      description: "Download Twitter videos and GIFs",
+      status: "Full Support"
+    },
+    {
+      name: "Vimeo",
+      description: "Download Vimeo videos",
+      status: "Full Support"
+    },
+    {
+      name: "LinkedIn",
+      description: "Download LinkedIn video content",
+      status: "Coming Soon"
+    },
+    {
+      name: "Pinterest",
+      description: "Download Pinterest videos",
+      status: "Coming Soon"
+    }
+  ];
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white">
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <Link 
+            href="/" 
+            className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-700 transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Home
+          </Link>
+        </div>
+
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              Supported Platforms
+            </h1>
+            <p className="text-lg text-gray-600">
+              FINTOK supports video downloads from multiple social media platforms
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            {supportedPlatforms.map((platform, index) => (
+              <div key={index} className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+                <div className="flex items-start justify-between mb-4">
+                  <h3 className="text-xl font-semibold text-gray-900">{platform.name}</h3>
+                  <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${
+                    platform.status === "Full Support" 
+                      ? "bg-green-100 text-green-700" 
+                      : "bg-yellow-100 text-yellow-700"
+                  }`}>
+                    {platform.status === "Full Support" && <CheckCircle className="h-3 w-3" />}
+                    {platform.status}
+                  </span>
+                </div>
+                <p className="text-gray-600">{platform.description}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-12 text-center">
+            <div className="bg-purple-50 rounded-2xl p-8">
+              <h2 className="text-2xl font-bold mb-4 text-gray-900">Don't see your platform?</h2>
+              <p className="text-gray-600 mb-6">
+                We're constantly adding support for new platforms. Let us know which one you'd like to see next!
+              </p>
+              <button className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-full font-medium hover:shadow-lg transition-all">
+                Request a Platform
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

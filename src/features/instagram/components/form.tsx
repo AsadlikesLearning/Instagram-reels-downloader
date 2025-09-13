@@ -106,10 +106,9 @@ export function InstagramVideoForm() {
             <div className="flex gap-3 justify-center">
               <Button
                 type="button"
-                variant="outline"
                 onClick={handlePaste}
                 disabled={isPending}
-                className="rounded-full px-6 py-3 border-purple-200 text-purple-600 hover:bg-purple-50 hover:border-purple-300 transition-colors"
+                className="rounded-full px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white shadow-lg hover:shadow-xl transition-all duration-200"
               >
                 <Clipboard className="mr-2 h-4 w-4" />
                 Paste
@@ -118,7 +117,7 @@ export function InstagramVideoForm() {
               <Button
                 type="submit"
                 disabled={isPending || !form.getValues("postUrl")}
-                className="rounded-full px-8 py-3 bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-500 hover:to-pink-500 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                className="rounded-full px-8 py-3 bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-400 hover:to-red-400 text-white shadow-lg hover:shadow-xl transition-all duration-200"
               >
                 {isPending ? (
                   <>
