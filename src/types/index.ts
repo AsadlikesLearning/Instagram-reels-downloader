@@ -17,6 +17,19 @@ export type VideoInfo = {
   width: string;
   height: string;
   videoUrl: string;
+  // Preview data
+  thumbnailUrl?: string;
+  title?: string;
+  caption?: string;
+  duration?: number; // in seconds
+  viewCount?: number;
+  owner?: {
+    username: string;
+    fullName: string;
+    profilePicUrl: string;
+    isVerified: boolean;
+  };
+  postedAt?: number; // timestamp
 };
 
 export type SuccessResponse<T> = {

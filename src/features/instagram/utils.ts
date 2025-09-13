@@ -163,11 +163,27 @@ export const formatGraphqlJson = (data: MediaData) => {
   const height = data.dimensions.height.toString();
   const videoUrl = data.video_url;
 
+  // Extract caption text
+  const caption = data.edge_media_to_caption?.edges?.[0]?.node?.text || '';
+
   const videoJson: VideoInfo = {
     filename,
     width,
     height,
     videoUrl,
+    // Enhanced preview data
+    thumbnailUrl: data.thumbnail_src,
+    title: data.title || '',
+    caption: caption,
+    duration: data.video_duration,
+    viewCount: data.video_view_count,
+    owner: {
+      username: data.owner.username,
+      fullName: data.owner.full_name,
+      profilePicUrl: data.owner.profile_pic_url,
+      isVerified: data.owner.is_verified,
+    },
+    postedAt: data.taken_at_timestamp,
   };
 
   return videoJson;

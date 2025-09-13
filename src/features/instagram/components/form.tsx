@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -18,8 +18,10 @@ import {
 } from "@/components/ui/form";
 
 import { Input } from "@/components/ui/input";
+import { VideoPreview } from "@/components/video-preview";
 
 import { getHttpErrorMessage } from "@/lib/http";
+import { VideoInfo } from "@/types";
 
 import { useVideoInfo } from "@/services/api/queries";
 
@@ -30,6 +32,9 @@ const formSchema = z.object({
 });
 
 export function InstagramVideoForm() {
+  const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -54,20 +59,49 @@ export function InstagramVideoForm() {
     }
   };
 
+  // Handle form submission - get video info for preview
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const { postUrl } = values;
     try {
       console.log("getting video info", postUrl);
-      const videoInfo = await getVideoInfo({ postUrl });
-  
-      const { filename, videoUrl } = videoInfo;
-  
-      console.log("videoUrl:", videoUrl);
-  
-      await downloadFile(videoUrl, filename);
+      const videoData = await getVideoInfo({ postUrl });
+      setVideoInfo(videoData);
     } catch (error: any) {
       console.log(error);
     }
+  }
+
+  // Handle actual download from preview
+  const handleDownload = async () => {
+    if (!videoInfo) return;
+    
+    setIsDownloading(true);
+    try {
+      console.log("downloading video:", videoInfo.videoUrl);
+      await downloadFile(videoInfo.videoUrl, videoInfo.filename);
+    } catch (error: any) {
+      console.log("Download error:", error);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  // Handle back to search
+  const handleBack = () => {
+    setVideoInfo(null);
+    form.reset();
+  };
+
+  // Show preview if we have video info
+  if (videoInfo) {
+    return (
+      <VideoPreview
+        videoInfo={videoInfo}
+        isDownloading={isDownloading}
+        onDownload={handleDownload}
+        onBack={handleBack}
+      />
+    );
   }
   
   return (
@@ -122,11 +156,11 @@ export function InstagramVideoForm() {
                 {isPending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Processing...
+                    Loading Preview...
                   </>
                 ) : (
                   <>
-                    Start
+                    Preview
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </>
                 )}
