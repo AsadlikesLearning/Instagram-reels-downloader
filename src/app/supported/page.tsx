@@ -5,33 +5,33 @@ export default function SupportedPage() {
   const supportedPlatforms = [
     {
       name: "Instagram",
-      description: "Download videos, reels, and IGTV content",
+      description: "Download videos, reels",
       status: "Full Support"
     },
     {
       name: "TikTok",
       description: "Download TikTok videos without watermarks",
-      status: "Full Support"
+      status: "Coming Soon"
     },
     {
       name: "YouTube",
       description: "Download YouTube videos in various qualities",
-      status: "Full Support"
+      status: "Coming Soon"
     },
     {
       name: "Facebook",
       description: "Download Facebook videos and stories",
-      status: "Full Support"
+      status: "Coming Soon"
     },
     {
       name: "X (Twitter)",
       description: "Download Twitter videos and GIFs",
-      status: "Full Support"
+      status: "Coming Soon"
     },
     {
       name: "Vimeo",
       description: "Download Vimeo videos",
-      status: "Full Support"
+      status: "Coming Soon"
     },
     {
       name: "LinkedIn",

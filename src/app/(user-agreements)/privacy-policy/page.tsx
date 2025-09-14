@@ -29,16 +29,15 @@ const PrivacyPolicyPage = () => {
           2. Third-Party Advertising and Analytics
         </h2>
         <p className="mb-2">
-          <span className="font-semibold">2.1.</span> We use third-party
-          advertising services, such as Google AdSense, to serve advertisements
-          on the Website. These third parties may use cookies, web beacons, and
-          other tracking technologies to collect information about your use of
-          the Website and other websites, including your IP address, browser
-          type, internet service provider, referring/exit pages, and date/time
-          stamp. For more information, please visit
+          <span className="font-semibold">2.1.</span> We may use third-party
+          services to improve our Website functionality. These services may use
+          cookies and other tracking technologies to collect information about
+          your use of the Website, including your IP address, browser type,
+          internet service provider, referring/exit pages, and date/time stamp.
+          For more information, please visit
           <a
             target="_blank"
-            href="https://www.privacypolicies.com/blog/privacy-policy-google-adsense/"
+            //href="https://www.privacypolicies.com/blog/privacy-policy-google-adsense/"
             className="text-blue-600 hover:underline"
           >
             {" "}
@@ -47,7 +46,7 @@ const PrivacyPolicyPage = () => {
           and
           <a
             target="_blank"
-            href="https://www.termsfeed.com/blog/privacy-policy-google-adsense/"
+            //href="https://www.termsfeed.com/blog/privacy-policy-google-adsense/"
             className="text-blue-600 hover:underline"
           >
             {" "}

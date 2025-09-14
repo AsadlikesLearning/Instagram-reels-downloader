@@ -19,6 +19,8 @@ import {
 
 import { Input } from "@/components/ui/input";
 import { VideoPreview } from "@/components/video-preview";
+import { LoadingSpinner, CuteLoadingAnimation } from "@/components/ui/loading-spinner";
+import { useSounds } from "@/lib/sounds";
 
 import { getHttpErrorMessage } from "@/lib/http";
 import { VideoInfo } from "@/types";
@@ -34,6 +36,7 @@ const formSchema = z.object({
 export function InstagramVideoForm() {
   const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -43,6 +46,22 @@ export function InstagramVideoForm() {
   });
 
   const { error, isPending, mutateAsync: getVideoInfo } = useVideoInfo();
+  const { playDownloadSuccess, playClick } = useSounds();
+  
+  // Watch the form field to make button state reactive
+  const postUrl = form.watch("postUrl");
+  
+  // Check if URL is valid using a simple regex
+  const isValidUrl = (url: string) => {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+  
+  const isFormValid = postUrl && postUrl.trim() !== "" && isValidUrl(postUrl.trim());
 
   const httpError = getHttpErrorMessage(error);
 
@@ -66,6 +85,8 @@ export function InstagramVideoForm() {
       console.log("getting video info", postUrl);
       const videoData = await getVideoInfo({ postUrl });
       setVideoInfo(videoData);
+      // Play success sound when preview is ready
+      playDownloadSuccess();
     } catch (error: any) {
       console.log(error);
     }
@@ -79,6 +100,15 @@ export function InstagramVideoForm() {
     try {
       console.log("downloading video:", videoInfo.videoUrl);
       await downloadFile(videoInfo.videoUrl, videoInfo.filename);
+      
+      // Show success animation and play sound
+      setShowSuccessAnimation(true);
+      playDownloadSuccess();
+      
+      // Hide success animation after 2 seconds
+      setTimeout(() => {
+        setShowSuccessAnimation(false);
+      }, 2000);
     } catch (error: any) {
       console.log("Download error:", error);
     } finally {
@@ -105,18 +135,18 @@ export function InstagramVideoForm() {
   }
   
   return (
-    <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 backdrop-blur-sm">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-4 sm:p-6 lg:p-8 backdrop-blur-sm">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
           {/* Error Message */}
           {httpError && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-600 text-sm">
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 text-red-600 dark:text-red-400 text-sm">
               {httpError}
             </div>
           )}
 
           {/* Input and Buttons */}
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <FormField
               control={form.control}
               name="postUrl"
@@ -127,22 +157,25 @@ export function InstagramVideoForm() {
                       disabled={isPending}
                       type="url"
                       placeholder="Paste video URL here"
-                      className="h-14 text-lg rounded-full border-gray-200 px-6 focus:border-purple-400 focus:ring-purple-400 transition-colors"
+                      className="h-12 sm:h-14 text-base sm:text-lg rounded-full border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white px-4 sm:px-6 focus:border-purple-400 focus:ring-purple-400 transition-colors"
                       {...field}
                     />
                   </FormControl>
-                  <FormMessage className="ml-6 text-sm" />
+                  <FormMessage className="ml-4 sm:ml-6 text-sm" />
                 </FormItem>
               )}
             />
 
             {/* Buttons */}
-            <div className="flex gap-3 justify-center">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button
                 type="button"
-                onClick={handlePaste}
+                onClick={() => {
+                  playClick();
+                  handlePaste();
+                }}
                 disabled={isPending}
-                className="rounded-full px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                className="rounded-full px-4 sm:px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white shadow-lg hover:shadow-xl transition-all duration-200 text-sm sm:text-base"
               >
                 <Clipboard className="mr-2 h-4 w-4" />
                 Paste
@@ -150,17 +183,19 @@ export function InstagramVideoForm() {
               
               <Button
                 type="submit"
-                disabled={isPending || !form.getValues("postUrl")}
-                className="rounded-full px-8 py-3 bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-400 hover:to-red-400 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                disabled={isPending || !isFormValid}
+                onClick={() => playClick()}
+                className={`rounded-full px-6 sm:px-8 py-3 text-white shadow-lg transition-all duration-200 text-sm sm:text-base ${
+                  isPending || !isFormValid
+                    ? "bg-gray-400 cursor-not-allowed opacity-60"
+                    : "bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-400 hover:to-red-400 hover:shadow-xl"
+                }`}
               >
                 {isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Loading Preview...
-                  </>
+                  <LoadingSpinner size="sm" text="Loading..." />
                 ) : (
                   <>
-                    Preview
+                    Download
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </>
                 )}
@@ -169,9 +204,23 @@ export function InstagramVideoForm() {
           </div>
 
           {/* Help Text */}
-          <p className="text-gray-500 text-center text-sm">
-            Paste a link from TikTok, Instagram, YouTube, Facebook, or other platforms
-          </p>
+          <div className="text-center">
+            <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm mb-2">
+              Paste a link from TikTok, Instagram, YouTube, Facebook, or other platforms
+            </p>
+            {!isFormValid ? (
+              <p className="text-gray-400 dark:text-gray-500 text-xs">
+                {!postUrl || postUrl.trim() === "" 
+                  ? "Enter a video URL to enable the download button"
+                  : "Please enter a valid video URL"
+                }
+              </p>
+            ) : (
+              <p className="text-green-600 dark:text-green-400 text-xs">
+                ✓ Ready to download
+              </p>
+            )}
+          </div>
         </form>
       </Form>
     </div>
