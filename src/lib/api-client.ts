@@ -7,6 +7,8 @@ export type APIClientOptions = RequestInit & {
   noBaseURL?: boolean;
   authRetries?: number;
   withCredentials?: boolean;
+  timeout?: number;
+  retries?: number;
 };
 
 export class APIClient {
@@ -46,40 +48,64 @@ export class APIClient {
   }
 
   async fetch(url: string, options?: APIClientOptions) {
-    let response;
+    const timeout = options?.timeout || 30000; // 30 seconds default
+    const retries = options?.retries || 3;
+    
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
+      
+      try {
+        const response = await fetch(url, {
+          ...options,
+          signal: controller.signal,
+        });
 
-    try {
-      response = await fetch(url, options);
+        clearTimeout(timeoutId);
 
-      if (!response.ok) {
-        const errorMessage = await this._getResponseErrors(response);
-        throw new HTTPError(errorMessage, response.status);
+        if (!response.ok) {
+          const errorMessage = await this._getResponseErrors(response);
+          throw new HTTPError(errorMessage, response.status);
+        }
+
+        return response;
+      } catch (error: any) {
+        clearTimeout(timeoutId);
+        
+        if (error.name === "AbortError") {
+          if (attempt === retries) {
+            throw new CustomError("Request timeout - please try again");
+          }
+          continue; // Retry on timeout
+        } else if (error.name === "SyntaxError" || error.name === "TypeError") {
+          throw new CustomError("Oops! Looks like the client is having issues");
+        }
+
+        if (error.name === "NetworkError") {
+          if (attempt === retries) {
+            throw new NetworkError(
+              "Network error, check your internet connection and try again"
+            );
+          }
+          continue; // Retry on network error
+        } else if (error.name === "SecurityError") {
+          throw new NetworkError(
+            "We are having issues connecting to the server. Please try again later"
+          );
+        }
+
+        if (error instanceof CustomError || error instanceof HTTPError) {
+          throw error;
+        }
+
+        if (attempt === retries) {
+          throw new CustomError("Oops! looks like something went wrong");
+        }
+        
+        // Wait before retry (exponential backoff)
+        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
       }
-    } catch (error: any) {
-      if (error.name === "AbortError") {
-        throw new CustomError("The request was aborted by the user");
-      } else if (error.name === "SyntaxError" || error.name === "TypeError") {
-        throw new CustomError("Oops! Looks like the client is having issues");
-      }
-
-      if (error.name === "NetworkError") {
-        throw new NetworkError(
-          "Network error, check your internet connection and try again"
-        );
-      } else if (error.name === "SecurityError") {
-        throw new NetworkError(
-          "We are having issues connecting to the server. Please try again later"
-        );
-      }
-
-      if (error instanceof CustomError) {
-        throw error;
-      }
-
-      throw new CustomError("Oops! looks like something went wrong");
     }
-
-    return response;
   }
 
   async get(endpoint: string, options?: APIClientOptions) {

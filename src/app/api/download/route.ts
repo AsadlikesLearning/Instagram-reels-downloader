@@ -47,27 +47,37 @@ export async function GET(request: Request) {
 
     const videoInfo = await getVideoInfo(postId);
     
-    // Fetch the video from Instagram
+    // Fetch the video from Instagram with optimized settings
     const videoResponse = await fetch(videoInfo.videoUrl, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Connection': 'keep-alive',
+        'Cache-Control': 'no-cache',
       },
+      // Add timeout and retry logic
+      signal: AbortSignal.timeout(60000), // 60 seconds timeout
     });
 
     if (!videoResponse.ok) {
       throw new HTTPError("Failed to fetch video from Instagram", 500);
     }
 
-    // Stream the video content
-    const videoBuffer = await videoResponse.arrayBuffer();
+    // Stream the video content directly without loading into memory
+    const videoStream = videoResponse.body;
     
-    // Return the video with proper headers for download
-    return new NextResponse(videoBuffer, {
+    if (!videoStream) {
+      throw new HTTPError("No video stream available", 500);
+    }
+
+    // Return the video stream with proper headers for download
+    return new NextResponse(videoStream, {
       status: 200,
       headers: {
         'Content-Type': 'video/mp4',
         'Content-Disposition': `attachment; filename="${filename}"`,
-        'Content-Length': videoBuffer.byteLength.toString(),
+        'Content-Length': videoResponse.headers.get('content-length') || '0',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
       },
     });
 

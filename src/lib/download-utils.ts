@@ -26,51 +26,64 @@ export async function downloadFileWithProgress(
     const contentLength = headResponse.headers.get('content-length');
     const totalBytes = contentLength ? parseInt(contentLength, 10) : 0;
     
-    // Show initial progress
-    onProgress?.({
-      progress: 0,
-      downloadedBytes: 0,
-      totalBytes,
-      speed: "Starting...",
-      timeRemaining: "Calculating...",
-      isComplete: false
-    });
+        // Show initial progress
+        onProgress?.({
+          progress: 0,
+          downloadedBytes: 0,
+          totalBytes,
+          speed: "Starting...",
+          timeRemaining: "Calculating...",
+          isComplete: false
+        });
 
-    // Start download with maximum speed (no chunking)
-    const startTime = Date.now();
-    const response = await fetch(videoUrl);
-    
-    if (!response.ok) {
-      throw new Error(`Failed to fetch video: ${response.status} ${response.statusText}`);
-    }
+        // Start download with maximum speed (no chunking)
+        const startTime = Date.now();
+        const response = await fetch(videoUrl, {
+          headers: {
+            'Connection': 'keep-alive',
+            'Cache-Control': 'no-cache',
+          },
+          // Add timeout for production environments
+          signal: AbortSignal.timeout(120000), // 2 minutes timeout
+        });
 
-    // Show downloading progress
-    onProgress?.({
-      progress: 50,
-      downloadedBytes: totalBytes / 2,
-      totalBytes,
-      speed: "Downloading...",
-      timeRemaining: "Processing...",
-      isComplete: false
-    });
+        if (!response.ok) {
+          throw new Error(`Failed to fetch video: ${response.status} ${response.statusText}`);
+        }
 
-    // Download the entire file at maximum speed
-    const blob = await response.blob();
-    
-    // Calculate actual download speed
-    const endTime = Date.now();
-    const downloadTime = (endTime - startTime) / 1000; // seconds
-    const actualSpeed = totalBytes > 0 ? totalBytes / downloadTime : 0;
-    
-    // Show processing progress
-    onProgress?.({
-      progress: 90,
-      downloadedBytes: totalBytes,
-      totalBytes,
-      speed: formatBytes(actualSpeed) + "/s",
-      timeRemaining: "Finalizing...",
-      isComplete: false
-    });
+        // Show downloading progress immediately
+        onProgress?.({
+          progress: 25,
+          downloadedBytes: totalBytes / 4,
+          totalBytes,
+          speed: "Downloading...",
+          timeRemaining: "Processing...",
+          isComplete: false
+        });
+
+        // Small delay to prevent progress bar from getting stuck
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        // Download the entire file at maximum speed
+        const blob = await response.blob();
+
+        // Calculate actual download speed
+        const endTime = Date.now();
+        const downloadTime = (endTime - startTime) / 1000; // seconds
+        const actualSpeed = totalBytes > 0 ? totalBytes / downloadTime : 0;
+
+        // Show processing progress
+        onProgress?.({
+          progress: 75,
+          downloadedBytes: totalBytes,
+          totalBytes,
+          speed: formatBytes(actualSpeed) + "/s",
+          timeRemaining: "Finalizing...",
+          isComplete: false
+        });
+
+        // Small delay before finalizing
+        await new Promise(resolve => setTimeout(resolve, 50));
 
     // Create download link
     const blobUrl = window.URL.createObjectURL(blob);
