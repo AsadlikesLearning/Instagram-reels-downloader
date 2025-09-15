@@ -16,10 +16,6 @@ export async function getVideoInfo({
     `${ServerEndpoints.GetByPostURL}?${searchParams.toString()}`
   );
 
-  if (!res) {
-    throw new CustomError("No response received from server");
-  }
-
   const json = (await res.json()) as APIResponse<VideoInfo>;
 
   if (json.status === "error") {

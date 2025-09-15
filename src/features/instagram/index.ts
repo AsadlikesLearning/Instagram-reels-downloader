@@ -7,7 +7,6 @@ import {
 
 import { VideoInfo } from "@/types";
 import { HTTPError } from "@/lib/errors";
-import { videoCache } from "@/lib/cache";
 
 import { INSTAGRAM_CONFIGS } from "./constants";
 import { formatGraphqlJson, formatPageJson, getPostIdFromUrl } from "./utils";
@@ -44,33 +43,16 @@ const getVideoJSONFromGraphQL = async (postId: string) => {
 };
 
 export const getVideoInfo = async (postId: string) => {
-  // Check cache first
-  const cacheKey = `video_${postId}`;
-  const cachedVideoInfo = videoCache.get<VideoInfo>(cacheKey);
-  
-  if (cachedVideoInfo) {
-    console.log(`Cache hit for postId: ${postId}`);
-    return cachedVideoInfo;
-  }
-
   let videoInfo: VideoInfo | null = null;
 
   if (INSTAGRAM_CONFIGS.enableWebpage) {
     videoInfo = await getVideoJsonFromHTML(postId);
-    if (videoInfo) {
-      // Cache the result for 5 minutes
-      videoCache.set(cacheKey, videoInfo, 5 * 60 * 1000);
-      return videoInfo;
-    }
+    if (videoInfo) return videoInfo;
   }
 
   if (INSTAGRAM_CONFIGS.enableGraphQL) {
     videoInfo = await getVideoJSONFromGraphQL(postId);
-    if (videoInfo) {
-      // Cache the result for 5 minutes
-      videoCache.set(cacheKey, videoInfo, 5 * 60 * 1000);
-      return videoInfo;
-    }
+    if (videoInfo) return videoInfo;
   }
 
   throw new HTTPError("Video link for this post is not public.", 401);

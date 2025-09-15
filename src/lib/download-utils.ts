@@ -38,14 +38,7 @@ export async function downloadFileWithProgress(
 
         // Start download with maximum speed (no chunking)
         const startTime = Date.now();
-        const response = await fetch(videoUrl, {
-          headers: {
-            'Connection': 'keep-alive',
-            'Cache-Control': 'no-cache',
-          },
-          // Add timeout for production environments
-          signal: AbortSignal.timeout(120000), // 2 minutes timeout
-        });
+        const response = await fetch(videoUrl);
 
         if (!response.ok) {
           throw new Error(`Failed to fetch video: ${response.status} ${response.statusText}`);

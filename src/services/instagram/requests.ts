@@ -12,8 +12,6 @@ export async function getPostPageHTML({
 }): Promise<string> {
   const res = await apiClient.get(`${InstagramEndpoints.GetByPost}/${postId}`, {
     baseURL: "https://www.instagram.com",
-    timeout: 15000, // 15 seconds timeout
-    retries: 2, // Retry twice on failure
     headers: {
       accept: "*/*",
       host: "www.instagram.com",
@@ -24,14 +22,8 @@ export async function getPostPageHTML({
       "Sec-Fetch-Site": "same-origin",
       "User-Agent":
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/117.0",
-      "Connection": "keep-alive",
-      "Cache-Control": "no-cache",
     },
   });
-
-  if (!res) {
-    throw new Error("No response received from Instagram");
-  }
 
   const data = await res.text();
 
@@ -48,8 +40,6 @@ export async function getPostGraphqlData({
   const res = await apiClient.post(InstagramEndpoints.GetByGraphQL, {
     baseURL: "https://www.instagram.com",
     body: encodedData,
-    timeout: 20000, // 20 seconds timeout for GraphQL
-    retries: 2, // Retry twice on failure
     headers: {
       Accept: "*/*",
       "Accept-Language": "en-US,en;q=0.5",
@@ -64,14 +54,8 @@ export async function getPostGraphqlData({
       "Sec-Fetch-Site": "same-origin",
       "User-Agent":
         "Mozilla/5.0 (Linux; Android 11; SAMSUNG SM-G973U) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/14.2 Chrome/87.0.4280.141 Mobile Safari/537.36",
-      "Connection": "keep-alive",
-      "Cache-Control": "no-cache",
     },
   });
-
-  if (!res) {
-    throw new Error("No response received from Instagram GraphQL");
-  }
 
   const data = await res.json();
 
