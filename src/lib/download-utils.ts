@@ -21,75 +21,57 @@ export async function downloadFileWithProgress(
   const { onProgress, onComplete, onError } = options;
   
   try {
-    // Start the download
+    // Get file size first for progress calculation
+    const headResponse = await fetch(videoUrl, { method: 'HEAD' });
+    const contentLength = headResponse.headers.get('content-length');
+    const totalBytes = contentLength ? parseInt(contentLength, 10) : 0;
+    
+    // Show initial progress
+    onProgress?.({
+      progress: 0,
+      downloadedBytes: 0,
+      totalBytes,
+      speed: "Starting...",
+      timeRemaining: "Calculating...",
+      isComplete: false
+    });
+
+    // Start download with maximum speed (no chunking)
+    const startTime = Date.now();
     const response = await fetch(videoUrl);
     
     if (!response.ok) {
       throw new Error(`Failed to fetch video: ${response.status} ${response.statusText}`);
     }
 
-    const contentLength = response.headers.get('content-length');
-    const totalBytes = contentLength ? parseInt(contentLength, 10) : 0;
+    // Show downloading progress
+    onProgress?.({
+      progress: 50,
+      downloadedBytes: totalBytes / 2,
+      totalBytes,
+      speed: "Downloading...",
+      timeRemaining: "Processing...",
+      isComplete: false
+    });
+
+    // Download the entire file at maximum speed
+    const blob = await response.blob();
     
-    if (!response.body) {
-      throw new Error('Response body is null');
-    }
-
-    const reader = response.body.getReader();
-    const chunks: Uint8Array[] = [];
-    let downloadedBytes = 0;
-    let startTime = Date.now();
-    let lastTime = startTime;
-    let lastBytes = 0;
-
-    // Read the stream
-    while (true) {
-      const { done, value } = await reader.read();
-      
-      if (done) break;
-      
-      chunks.push(value);
-      downloadedBytes += value.length;
-      
-      const currentTime = Date.now();
-      const timeDiff = (currentTime - lastTime) / 1000; // seconds
-      
-      // Calculate speed and progress
-      let speed = "0 B/s";
-      let timeRemaining = "Calculating...";
-      
-      if (timeDiff >= 1) { // Update every second
-        const bytesDiff = downloadedBytes - lastBytes;
-        const speedBytesPerSecond = bytesDiff / timeDiff;
-        
-        speed = formatBytes(speedBytesPerSecond) + "/s";
-        
-        if (speedBytesPerSecond > 0 && totalBytes > 0) {
-          const remainingBytes = totalBytes - downloadedBytes;
-          const remainingSeconds = remainingBytes / speedBytesPerSecond;
-          timeRemaining = formatTime(remainingSeconds);
-        }
-        
-        lastTime = currentTime;
-        lastBytes = downloadedBytes;
-      }
-      
-      const progress = totalBytes > 0 ? (downloadedBytes / totalBytes) * 100 : 0;
-      
-      // Call progress callback
-      onProgress?.({
-        progress,
-        downloadedBytes,
-        totalBytes,
-        speed,
-        timeRemaining,
-        isComplete: false
-      });
-    }
-
-    // Combine all chunks into a single blob
-    const blob = new Blob(chunks, { type: 'video/mp4' });
+    // Calculate actual download speed
+    const endTime = Date.now();
+    const downloadTime = (endTime - startTime) / 1000; // seconds
+    const actualSpeed = totalBytes > 0 ? totalBytes / downloadTime : 0;
     
+    // Show processing progress
+    onProgress?.({
+      progress: 90,
+      downloadedBytes: totalBytes,
+      totalBytes,
+      speed: formatBytes(actualSpeed) + "/s",
+      timeRemaining: "Finalizing...",
+      isComplete: false
+    });
+
     // Create download link
     const blobUrl = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -108,9 +90,9 @@ export async function downloadFileWithProgress(
     // Final progress update
     onProgress?.({
       progress: 100,
-      downloadedBytes: totalBytes || downloadedBytes,
-      totalBytes: totalBytes || downloadedBytes,
-      speed: "0 B/s",
+      downloadedBytes: totalBytes,
+      totalBytes,
+      speed: formatBytes(actualSpeed) + "/s",
       timeRemaining: "0s",
       isComplete: true
     });
