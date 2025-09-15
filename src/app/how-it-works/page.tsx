@@ -1,5 +1,23 @@
 import Link from "next/link";
 import { ArrowLeft, Copy, Play, Download } from "lucide-react";
+import { Metadata } from "next";
+import { generateSEOMetadata, generateStructuredData } from "@/components/seo-head";
+
+export const metadata: Metadata = generateSEOMetadata({
+  title: "How It Works - FINTOK Video Downloader Guide | 3 Simple Steps",
+  description: "Learn how to download videos with FINTOK in 3 simple steps. Copy, paste, and download Instagram videos, reels, and more. No registration required.",
+  keywords: [
+    "how to download videos",
+    "video download guide",
+    "Instagram download tutorial",
+    "how FINTOK works",
+    "video download steps",
+    "download process",
+    "video downloader tutorial",
+    "step by step guide"
+  ],
+  canonical: "/how-it-works"
+});
 
 export default function HowItWorksPage() {
   const steps = [
@@ -20,8 +38,27 @@ export default function HowItWorksPage() {
     }
   ];
 
+  const structuredData = generateStructuredData("HowTo", {
+    name: "How to Download Videos with FINTOK",
+    description: "Learn how to download videos from social media platforms using FINTOK in 3 simple steps",
+    step: steps.map((step, index) => ({
+      "@type": "HowToStep",
+      position: index + 1,
+      name: step.title,
+      text: step.description,
+      image: `https://fintok.com/images/step-${index + 1}.png`
+    }))
+  });
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(structuredData)
+        }}
+      />
+      <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <Link 
@@ -119,5 +156,6 @@ export default function HowItWorksPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }

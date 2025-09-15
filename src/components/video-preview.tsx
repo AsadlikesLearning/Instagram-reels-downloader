@@ -6,11 +6,14 @@ import { Download, Play, Eye, Clock, Calendar, CheckCircle } from "lucide-react"
 import { Button } from "@/components/ui/button";
 import { VideoInfo } from "@/types";
 import { LoadingSpinner, SuccessAnimation } from "@/components/ui/loading-spinner";
+import { DownloadProgress as DownloadProgressComponent } from "@/components/ui/progress-bar";
+import { DownloadProgress } from "@/lib/download-utils";
 import { useSounds } from "@/lib/sounds";
 
 interface VideoPreviewProps {
   videoInfo: VideoInfo;
   isDownloading?: boolean;
+  downloadProgress?: DownloadProgress | null;
   onDownload: () => void;
   onBack: () => void;
 }
@@ -40,18 +43,24 @@ const formatTimeAgo = (timestamp: number): string => {
   return `${Math.floor(diff / 86400)}d ago`;
 };
 
-export function VideoPreview({ videoInfo, isDownloading, onDownload, onBack }: VideoPreviewProps) {
+export function VideoPreview({ videoInfo, isDownloading, downloadProgress, onDownload, onBack }: VideoPreviewProps) {
   const { playClick } = useSounds();
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-4 sm:p-6 backdrop-blur-sm prevent-overflow">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-3">
         <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">Video Preview</h3>
+        {/* Desktop Back Button */}
         <Button 
-          variant="outline" 
-          onClick={onBack}
-          className="text-xs sm:text-sm w-full sm:w-auto"
+          onClick={() => {
+            playClick();
+            onBack();
+          }}
+          className="hidden sm:flex text-xs sm:text-sm w-auto rounded-full px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-400 hover:to-cyan-400 text-white shadow-md hover:shadow-lg transition-all duration-200 font-medium"
         >
+          <svg className="mr-2 h-3 w-3 sm:h-4 sm:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
           Back to Search
         </Button>
       </div>
@@ -162,6 +171,22 @@ export function VideoPreview({ videoInfo, isDownloading, onDownload, onBack }: V
           </div>
         </div>
 
+        {/* Download Progress */}
+        {downloadProgress && (
+          <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+            <h5 className="font-medium text-gray-900 dark:text-white mb-3 text-sm sm:text-base">
+              Download Progress
+            </h5>
+            <DownloadProgressComponent
+              progress={downloadProgress.progress}
+              downloadedBytes={downloadProgress.downloadedBytes}
+              totalBytes={downloadProgress.totalBytes}
+              speed={downloadProgress.speed}
+              timeRemaining={downloadProgress.timeRemaining}
+            />
+          </div>
+        )}
+
         {/* Download Button */}
         <Button
           onClick={() => {
@@ -181,6 +206,21 @@ export function VideoPreview({ videoInfo, isDownloading, onDownload, onBack }: V
               <span className="sm:hidden">Download</span>
             </>
           )}
+        </Button>
+
+        {/* Mobile Back Button */}
+        <Button
+          onClick={() => {
+            playClick();
+            onBack();
+          }}
+          className="sm:hidden w-full rounded-full py-3 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-400 hover:to-cyan-400 text-white shadow-lg hover:shadow-xl transition-all duration-200 text-sm font-medium"
+          size="lg"
+        >
+          <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Back to Search
         </Button>
 
         {/* Help Text */}

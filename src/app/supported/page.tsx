@@ -1,5 +1,23 @@
 import Link from "next/link";
 import { ArrowLeft, CheckCircle } from "lucide-react";
+import { Metadata } from "next";
+import { generateSEOMetadata, generateStructuredData } from "@/components/seo-head";
+
+export const metadata: Metadata = generateSEOMetadata({
+  title: "Supported Platforms - FINTOK | Instagram, TikTok, YouTube & More",
+  description: "See all supported platforms for video downloads. Currently supporting Instagram videos and reels, with TikTok, YouTube, Facebook and more coming soon.",
+  keywords: [
+    "supported platforms",
+    "Instagram downloader",
+    "TikTok downloader",
+    "YouTube downloader",
+    "Facebook downloader",
+    "video download platforms",
+    "social media downloader",
+    "supported sites"
+  ],
+  canonical: "/supported"
+});
 
 export default function SupportedPage() {
   const supportedPlatforms = [
@@ -45,8 +63,31 @@ export default function SupportedPage() {
     }
   ];
 
+  const structuredData = generateStructuredData("ItemList", {
+    name: "Supported Video Download Platforms",
+    description: "List of social media platforms supported by FINTOK for video downloads",
+    itemListElement: supportedPlatforms.map((platform, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: platform.name,
+      description: platform.description,
+      additionalProperty: {
+        "@type": "PropertyValue",
+        name: "Support Status",
+        value: platform.status
+      }
+    }))
+  });
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(structuredData)
+        }}
+      />
+      <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <Link 
@@ -101,5 +142,6 @@ export default function SupportedPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }

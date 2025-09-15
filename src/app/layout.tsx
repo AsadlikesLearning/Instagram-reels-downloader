@@ -4,6 +4,10 @@ import { DM_Sans as FontSans } from "next/font/google";
 import { Navbar, Footer } from "@/components/layout";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { ReactQueryProvider } from "@/components/providers/react-query-provider";
+import { generateSEOMetadata, defaultStructuredData } from "@/components/seo-head";
+import { PerformanceOptimizer } from "@/components/performance-optimizer";
+import { SEOAnalyzer } from "@/components/seo-analyzer";
+import { AdvancedSEO } from "@/components/advanced-seo";
 
 import { cn } from "@/lib/utils";
 
@@ -15,71 +19,7 @@ const fontSans = FontSans({
   variable: "--font-sans",
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL('https://fintok.com'),
-  title: "FINTOK - Free Instagram Video Downloader | Download Instagram Reels & Videos",
-  description: "Download Instagram videos, reels, and stories for free with FINTOK. Fast, secure, and easy-to-use Instagram video downloader. No registration required.",
-  keywords: [
-    "Instagram video downloader",
-    "Instagram reels downloader", 
-    "download Instagram videos",
-    "Instagram story downloader",
-    "free video downloader",
-    "social media downloader",
-    "Instagram to MP4",
-    "video download tool"
-  ],
-  authors: [{ name: "FINTOK Team" }],
-  creator: "FINTOK",
-  publisher: "FINTOK",
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
-  },
-  openGraph: {
-    type: "website",
-    locale: "en_US",
-    url: "https://fintok.com",
-    siteName: "FINTOK",
-    title: "FINTOK - Free Instagram Video Downloader",
-    description: "Download Instagram videos, reels, and stories for free. Fast, secure, and easy-to-use Instagram video downloader.",
-    images: [
-      {
-        url: "/images/open-graph.png",
-        width: 1200,
-        height: 630,
-        alt: "FINTOK - Instagram Video Downloader",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "FINTOK - Free Instagram Video Downloader",
-    description: "Download Instagram videos, reels, and stories for free. Fast, secure, and easy-to-use.",
-    images: ["/images/open-graph.png"],
-    creator: "@fintok",
-  },
-  alternates: {
-    canonical: "https://fintok.com",
-  },
-  category: "technology",
-  classification: "Video Downloader Tool",
-  other: {
-    "apple-mobile-web-app-capable": "yes",
-    "apple-mobile-web-app-status-bar-style": "default",
-    "apple-mobile-web-app-title": "FINTOK",
-    "mobile-web-app-capable": "yes",
-    "msapplication-TileColor": "#8B5CF6",
-    "theme-color": "#8B5CF6",
-  },
-};
+export const metadata: Metadata = generateSEOMetadata();
 
 export default function RootLayout({
   children,
@@ -99,32 +39,7 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "WebApplication",
-              "name": "FINTOK",
-              "description": "Free Instagram video downloader for downloading Instagram videos, reels, and stories",
-              "url": "https://fintok.com",
-              "applicationCategory": "MultimediaApplication",
-              "operatingSystem": "Web Browser",
-              "offers": {
-                "@type": "Offer",
-                "price": "0",
-                "priceCurrency": "USD"
-              },
-              "creator": {
-                "@type": "Organization",
-                "name": "FINTOK Team"
-              },
-              "featureList": [
-                "Download Instagram Videos",
-                "Download Instagram Reels", 
-                "Download Instagram Stories",
-                "High Quality Downloads",
-                "Fast Processing",
-                "No Registration Required"
-              ]
-            })
+            __html: JSON.stringify(defaultStructuredData)
           }}
         />
       </head>
@@ -141,6 +56,9 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <ReactQueryProvider>
+            <PerformanceOptimizer />
+            <SEOAnalyzer />
+            <AdvancedSEO />
             <Navbar />
             <main className="relative min-h-[calc(100vh-8rem)] overflow-y-auto px-2 sm:px-4 lg:px-6 mobile-scroll">
               {children}

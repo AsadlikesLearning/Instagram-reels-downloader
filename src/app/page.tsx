@@ -41,8 +41,9 @@ export default function HomePage() {
               </span>
             </h1>
             <p className="text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-8 sm:mb-12 max-w-2xl mx-auto leading-relaxed">
-              Paste a link from Instagram and more(coming soon). FINTOK
-              fetches the best available media for fast, clean downloads.
+              Paste a link from Instagram and more (coming soon). FINTOK
+              fetches the best available media for fast, clean downloads. 
+              <strong> Free Instagram video downloader</strong> with no registration required.
             </p>
             
             {/* Features Grid */}
@@ -99,7 +100,7 @@ export default function HomePage() {
       <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-12 sm:py-16">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-2xl sm:text-3xl font-bold mb-6">
-            Why choose <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">FINTOK</span>?
+            Why choose <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">FINTOK</span> for Instagram video downloads?
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
             <div className="p-6 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-xl border border-white/20">
@@ -129,6 +130,75 @@ export default function HomePage() {
               <h3 className="font-semibold text-lg mb-2">Instant Download</h3>
               <p className="text-gray-600 dark:text-gray-400 text-sm">Get your videos in seconds with our high-speed processing engine.</p>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* SEO Content Section */}
+      <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-12 sm:py-16 bg-gray-50 dark:bg-gray-900/50">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-2xl sm:text-3xl font-bold mb-8 text-center">
+            The Best Free Instagram Video Downloader
+          </h2>
+          
+          <div className="prose prose-lg max-w-none dark:prose-invert">
+            <p className="text-gray-600 dark:text-gray-300 mb-6">
+              <strong>FINTOK</strong> is the leading <strong>free Instagram video downloader</strong> that allows you to 
+              <strong> download Instagram videos</strong>, <strong>Instagram reels</strong>, and <strong>Instagram stories</strong> 
+              in high quality without any watermarks. Our <strong>Instagram video downloader</strong> is completely free to use 
+              and requires no registration or software installation.
+            </p>
+
+            <h3 className="text-xl font-semibold mb-4">How to Download Instagram Videos with FINTOK</h3>
+            <ol className="list-decimal list-inside space-y-2 text-gray-600 dark:text-gray-300 mb-6">
+              <li>Copy the Instagram video URL from your browser or the Instagram app</li>
+              <li>Paste the link into our <strong>Instagram video downloader</strong> above</li>
+              <li>Click "Download" and get your video in seconds</li>
+              <li>Save the video to your device in the highest available quality</li>
+            </ol>
+
+            <h3 className="text-xl font-semibold mb-4">Features of Our Instagram Video Downloader</h3>
+            <ul className="list-disc list-inside space-y-2 text-gray-600 dark:text-gray-300 mb-6">
+              <li><strong>Free Instagram video downloader</strong> - No cost, no hidden fees</li>
+              <li><strong>Download Instagram reels</strong> - Save Instagram reels in HD quality</li>
+              <li><strong>Instagram story downloader</strong> - Download Instagram stories before they expire</li>
+              <li><strong>High quality downloads</strong> - Get videos in the best available resolution</li>
+              <li><strong>No watermark</strong> - Clean downloads without Instagram watermarks</li>
+              <li><strong>Fast processing</strong> - Download videos in seconds</li>
+              <li><strong>Mobile friendly</strong> - Works on all devices and browsers</li>
+              <li><strong>Secure and private</strong> - No data collection or storage</li>
+            </ul>
+
+            <h3 className="text-xl font-semibold mb-4">Supported Instagram Content Types</h3>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">
+              Our <strong>Instagram video downloader</strong> supports all types of Instagram content:
+            </p>
+            <ul className="list-disc list-inside space-y-2 text-gray-600 dark:text-gray-300 mb-6">
+              <li>Instagram videos from posts</li>
+              <li>Instagram reels</li>
+              <li>Instagram stories</li>
+              <li>IGTV videos</li>
+              <li>Instagram live videos (when available)</li>
+            </ul>
+
+            <h3 className="text-xl font-semibold mb-4">Why Choose FINTOK for Instagram Downloads?</h3>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">
+              FINTOK is the most trusted <strong>free Instagram video downloader</strong> because we offer:
+            </p>
+            <ul className="list-disc list-inside space-y-2 text-gray-600 dark:text-gray-300 mb-6">
+              <li>100% free service with no limitations</li>
+              <li>No registration or account creation required</li>
+              <li>Works on all devices - desktop, mobile, and tablet</li>
+              <li>Supports all major browsers</li>
+              <li>Regular updates and improvements</li>
+              <li>Fast and reliable download speeds</li>
+              <li>Privacy-focused - we don't store your data</li>
+            </ul>
+
+            <p className="text-gray-600 dark:text-gray-300 text-center font-medium">
+              Start downloading Instagram videos for free today with FINTOK - the best 
+              <strong> Instagram video downloader</strong> available online!
+            </p>
           </div>
         </div>
       </div>

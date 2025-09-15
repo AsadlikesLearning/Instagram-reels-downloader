@@ -1,5 +1,24 @@
 import Link from "next/link";
 import { ArrowLeft, ChevronDown } from "lucide-react";
+import { Metadata } from "next";
+import { generateSEOMetadata, generateStructuredData } from "@/components/seo-head";
+
+export const metadata: Metadata = generateSEOMetadata({
+  title: "FAQ - Frequently Asked Questions | FINTOK Video Downloader",
+  description: "Find answers to common questions about FINTOK video downloader. Learn about features, supported platforms, video quality, and how to use our free Instagram video downloader.",
+  keywords: [
+    "FAQ",
+    "frequently asked questions",
+    "video downloader FAQ",
+    "Instagram downloader help",
+    "video download questions",
+    "FINTOK help",
+    "download support",
+    "video quality",
+    "supported formats"
+  ],
+  canonical: "/faq"
+});
 
 export default function FAQPage() {
   const faqs = [
@@ -45,8 +64,26 @@ export default function FAQPage() {
     }
   ];
 
+  const structuredData = generateStructuredData("FAQPage", {
+    mainEntity: faqs.map(faq => ({
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: faq.answer
+      }
+    }))
+  });
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(structuredData)
+        }}
+      />
+      <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <Link 
@@ -96,5 +133,6 @@ export default function FAQPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }

@@ -145,6 +145,56 @@ const nextConfig = {
         destination: '/',
         permanent: true,
       },
+      {
+        source: '/instagram-downloader',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/download-instagram-videos',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/instagram-reels-downloader',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/instagram-video-downloader',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/free-instagram-downloader',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/instagram-story-downloader',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/download-instagram-reels',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/instagram-to-mp4',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/save-instagram-videos',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/instagram-video-saver',
+        destination: '/',
+        permanent: true,
+      },
     ];
   },
 };

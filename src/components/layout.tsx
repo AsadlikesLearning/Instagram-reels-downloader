@@ -6,6 +6,7 @@ import Link from "next/link";
 import { MobileNav } from "./mobile-nav";
 import { ThemeToggle } from "./theme-toggle";
 import { SoundToggle } from "./ui/sound-toggle";
+import { MegaMenu } from "./mega-menu";
 
 import { cn } from "@/lib/utils";
 
@@ -31,20 +32,7 @@ export function Navbar() {
         </div>
         <MobileNav className="md:hidden" />
         <div className="ml-auto flex items-center gap-2 sm:gap-4">
-          <div className="hidden items-center gap-4 text-sm sm:text-base sm:gap-6 md:flex">
-            <Link href="/" className="hover:text-purple-600 transition-colors font-medium">
-              Home
-            </Link>
-            <Link href="/supported" className="hover:text-purple-600 transition-colors font-medium">
-              Supported
-            </Link>
-            <Link href="/how-it-works" className="hover:text-purple-600 transition-colors font-medium">
-              How it works
-            </Link>
-            <Link href="/faq" className="hover:text-purple-600 transition-colors font-medium">
-              FAQ
-            </Link>
-          </div>
+          <MegaMenu className="hidden md:block" />
           <div className="flex items-center gap-2">
             <SoundToggle />
             <ThemeToggle />

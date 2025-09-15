@@ -24,6 +24,7 @@ import { useSounds } from "@/lib/sounds";
 
 import { getHttpErrorMessage } from "@/lib/http";
 import { VideoInfo } from "@/types";
+import { downloadFileWithProgress, DownloadProgress } from "@/lib/download-utils";
 
 import { useVideoInfo } from "@/services/api/queries";
 
@@ -37,6 +38,7 @@ export function InstagramVideoForm() {
   const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState<DownloadProgress | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -97,20 +99,35 @@ export function InstagramVideoForm() {
     if (!videoInfo) return;
     
     setIsDownloading(true);
+    setDownloadProgress(null);
+    
     try {
       console.log("downloading video:", videoInfo.videoUrl);
-      await downloadFile(videoInfo.videoUrl, videoInfo.filename);
       
-      // Show success animation and play sound
-      setShowSuccessAnimation(true);
-      playDownloadSuccess();
+      await downloadFileWithProgress(videoInfo.videoUrl, videoInfo.filename, {
+        onProgress: (progress) => {
+          setDownloadProgress(progress);
+        },
+        onComplete: () => {
+          // Show success animation and play sound
+          setShowSuccessAnimation(true);
+          playDownloadSuccess();
+          
+          // Hide success animation after 2 seconds
+          setTimeout(() => {
+            setShowSuccessAnimation(false);
+            setDownloadProgress(null);
+          }, 2000);
+        },
+        onError: (error) => {
+          console.log("Download error:", error);
+          setDownloadProgress(null);
+        }
+      });
       
-      // Hide success animation after 2 seconds
-      setTimeout(() => {
-        setShowSuccessAnimation(false);
-      }, 2000);
     } catch (error: any) {
       console.log("Download error:", error);
+      setDownloadProgress(null);
     } finally {
       setIsDownloading(false);
     }
@@ -128,6 +145,7 @@ export function InstagramVideoForm() {
       <VideoPreview
         videoInfo={videoInfo}
         isDownloading={isDownloading}
+        downloadProgress={downloadProgress}
         onDownload={handleDownload}
         onBack={handleBack}
       />
@@ -206,7 +224,7 @@ export function InstagramVideoForm() {
           {/* Help Text */}
           <div className="text-center">
             <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm mb-2">
-              Paste a link from TikTok, Instagram, YouTube, Facebook, or other platforms
+              Paste a link from Instagram to download the video
             </p>
             {!isFormValid ? (
               <p className="text-gray-400 dark:text-gray-500 text-xs">
@@ -227,28 +245,3 @@ export function InstagramVideoForm() {
   );
 }
 
-// Utility function for download
-export async function downloadFile(videoUrl: string, filename: string) {
-  try {
-    const response = await fetch(videoUrl);
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch the video for download.");
-    }
-
-    const blob = await response.blob();
-    const blobUrl = window.URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = blobUrl;
-    a.download = filename; // Set the filename for the download
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-
-    // Cleanup blob URL
-    window.URL.revokeObjectURL(blobUrl);
-  } catch (error) {
-    console.error("Error during file download:", error);
-  }
-}
