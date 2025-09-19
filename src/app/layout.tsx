@@ -8,6 +8,7 @@ import { generateSEOMetadata, defaultStructuredData } from "@/components/seo-hea
 import { PerformanceOptimizer } from "@/components/performance-optimizer";
 import { SEOAnalyzer } from "@/components/seo-analyzer";
 import { AdvancedSEO } from "@/components/advanced-seo";
+import { GoogleAnalytics } from "@/components/analytics";
 
 import { cn } from "@/lib/utils";
 
@@ -42,18 +43,6 @@ export default function RootLayout({
             __html: JSON.stringify(defaultStructuredData)
           }}
         />
-        {/* Google Analytics */}
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-NQBLNWPK2M"></script>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', 'G-NQBLNWPK2M');
-            `
-          }}
-        />
       </head>
       <body
         className={cn(
@@ -61,6 +50,7 @@ export default function RootLayout({
           "overflow-x-hidden bg-background font-sans antialiased"
         )}
       >
+        <GoogleAnalytics />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

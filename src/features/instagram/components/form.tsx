@@ -25,6 +25,7 @@ import { useSounds } from "@/lib/sounds";
 import { getHttpErrorMessage } from "@/lib/http";
 import { VideoInfo } from "@/types";
 import { downloadFileWithProgress, DownloadProgress } from "@/lib/download-utils";
+import { trackSearch, trackDownload, trackError } from "@/lib/analytics";
 
 import { useVideoInfo } from "@/services/api/queries";
 
@@ -85,12 +86,17 @@ export function InstagramVideoForm() {
     const { postUrl } = values;
     try {
       console.log("getting video info", postUrl);
+      // Track search event
+      trackSearch(postUrl);
+      
       const videoData = await getVideoInfo({ postUrl });
       setVideoInfo(videoData);
       // Play success sound when preview is ready
       playDownloadSuccess();
     } catch (error: any) {
       console.log(error);
+      // Track error event
+      trackError(error.message || 'Unknown error', 'video_info_fetch');
     }
   }
 
@@ -103,6 +109,9 @@ export function InstagramVideoForm() {
     
     try {
       console.log("downloading video:", videoInfo.videoUrl);
+      
+      // Track download event
+      trackDownload(videoInfo.videoUrl, videoInfo.filename);
       
       await downloadFileWithProgress(videoInfo.videoUrl, videoInfo.filename, {
         onProgress: (progress) => {
@@ -121,6 +130,8 @@ export function InstagramVideoForm() {
         },
         onError: (error) => {
           console.log("Download error:", error);
+          // Track download error
+          trackError(error.message || 'Download failed', 'video_download');
           setDownloadProgress(null);
         }
       });
