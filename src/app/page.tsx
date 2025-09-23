@@ -138,7 +138,7 @@ export default function HomePage() {
       <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-12 sm:py-16 bg-gray-50 dark:bg-gray-900/50">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-2xl sm:text-3xl font-bold mb-8 text-center">
-            The Best Free Instagram Video Downloader
+            The Best Free Instagram Video Downloader - FINTOK
           </h2>
           
           <div className="prose prose-lg max-w-none dark:prose-invert">
@@ -194,6 +194,46 @@ export default function HomePage() {
               <li>Fast and reliable download speeds</li>
               <li>Privacy-focused - we don't store your data</li>
             </ul>
+
+            <h3 className="text-xl font-semibold mb-4">Instagram Video Downloader FAQ</h3>
+            <div className="space-y-4 mb-6">
+              <div>
+                <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">Is FINTOK Instagram video downloader free?</h4>
+                <p className="text-gray-600 dark:text-gray-300">Yes, FINTOK is completely free to use. No registration, no hidden fees, no premium plans.</p>
+              </div>
+              <div>
+                <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">Can I download Instagram reels with FINTOK?</h4>
+                <p className="text-gray-600 dark:text-gray-300">Absolutely! Our Instagram video downloader supports all Instagram content including reels, stories, and regular posts.</p>
+              </div>
+              <div>
+                <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">Does FINTOK work on mobile devices?</h4>
+                <p className="text-gray-600 dark:text-gray-300">Yes, FINTOK works on all devices including Android, iPhone, iPad, and desktop computers.</p>
+              </div>
+              <div>
+                <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">Is it safe to use FINTOK Instagram downloader?</h4>
+                <p className="text-gray-600 dark:text-gray-300">Yes, FINTOK is completely safe and secure. We don't collect personal data or store your downloads.</p>
+              </div>
+            </div>
+
+            <h3 className="text-xl font-semibold mb-4">Best Instagram Video Downloader Features</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <div className="bg-white/50 dark:bg-gray-800/50 p-4 rounded-lg">
+                <h4 className="font-semibold mb-2">High Quality Downloads</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Download Instagram videos in the highest available quality, up to 4K resolution.</p>
+              </div>
+              <div className="bg-white/50 dark:bg-gray-800/50 p-4 rounded-lg">
+                <h4 className="font-semibold mb-2">No Watermarks</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Get clean downloads without any Instagram watermarks or branding.</p>
+              </div>
+              <div className="bg-white/50 dark:bg-gray-800/50 p-4 rounded-lg">
+                <h4 className="font-semibold mb-2">Fast Processing</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Download videos in seconds with our optimized processing engine.</p>
+              </div>
+              <div className="bg-white/50 dark:bg-gray-800/50 p-4 rounded-lg">
+                <h4 className="font-semibold mb-2">Mobile Optimized</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Works perfectly on all mobile devices and tablets.</p>
+              </div>
+            </div>
 
             <p className="text-gray-600 dark:text-gray-300 text-center font-medium">
               Start downloading Instagram videos for free today with FINTOK - the best 

@@ -9,6 +9,7 @@ import { PerformanceOptimizer } from "@/components/performance-optimizer";
 import { SEOAnalyzer } from "@/components/seo-analyzer";
 import { AdvancedSEO } from "@/components/advanced-seo";
 import { GoogleAnalytics } from "@/components/analytics";
+import { SEOOptimizer } from "@/components/seo-optimizer";
 
 import { cn } from "@/lib/utils";
 
@@ -51,6 +52,7 @@ export default function RootLayout({
         )}
       >
         <GoogleAnalytics />
+        <SEOOptimizer />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

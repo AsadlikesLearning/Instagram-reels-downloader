@@ -47,10 +47,13 @@ export async function GET(request: Request) {
 
     const videoInfo = await getVideoInfo(postId);
     
-    // Fetch the video from Instagram
+    // Fetch the video from Instagram with streaming support
     const videoResponse = await fetch(videoInfo.videoUrl, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Accept': 'video/mp4,video/*,*/*',
+        'Accept-Encoding': 'identity', // Disable compression for streaming
+        'Cache-Control': 'no-cache',
       },
     });
 
@@ -58,16 +61,49 @@ export async function GET(request: Request) {
       throw new HTTPError("Failed to fetch video from Instagram", 500);
     }
 
-    // Stream the video content
-    const videoBuffer = await videoResponse.arrayBuffer();
+    // Get content length for proper headers
+    const contentLength = videoResponse.headers.get('content-length');
+    const contentType = videoResponse.headers.get('content-type') || 'video/mp4';
     
-    // Return the video with proper headers for download
-    return new NextResponse(videoBuffer, {
+    // Create a readable stream for streaming download
+    const stream = new ReadableStream({
+      start(controller) {
+        const reader = videoResponse.body?.getReader();
+        
+        if (!reader) {
+          controller.close();
+          return;
+        }
+
+        function pump(): Promise<void> {
+          return reader!.read().then(({ done, value }) => {
+            if (done) {
+              controller.close();
+              return;
+            }
+            
+            // Send chunk to client
+            controller.enqueue(value);
+            return pump();
+          }).catch((error) => {
+            console.error('Stream error:', error);
+            controller.error(error);
+          });
+        }
+
+        return pump();
+      }
+    });
+    
+    // Return streaming response with proper headers
+    return new NextResponse(stream, {
       status: 200,
       headers: {
-        'Content-Type': 'video/mp4',
+        'Content-Type': contentType,
         'Content-Disposition': `attachment; filename="${filename}"`,
-        'Content-Length': videoBuffer.byteLength.toString(),
+        'Accept-Ranges': 'bytes',
+        'Cache-Control': 'no-cache',
+        ...(contentLength && { 'Content-Length': contentLength }),
       },
     });
 

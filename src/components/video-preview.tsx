@@ -44,7 +44,8 @@ const formatTimeAgo = (timestamp: number): string => {
 };
 
 export function VideoPreview({ videoInfo, isDownloading, downloadProgress, onDownload, onBack }: VideoPreviewProps) {
-  const { playClick } = useSounds();
+  const { playClick, playDownloadSuccess } = useSounds();
+  const [showSuccessAnimation, setShowSuccessAnimation] = React.useState(false);
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-4 sm:p-6 backdrop-blur-sm prevent-overflow">
@@ -174,9 +175,17 @@ export function VideoPreview({ videoInfo, isDownloading, downloadProgress, onDow
         {/* Download Progress */}
         {downloadProgress && (
           <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
-            <h5 className="font-medium text-gray-900 dark:text-white mb-3 text-sm sm:text-base">
-              Download Progress
-            </h5>
+            <div className="flex items-center justify-between mb-3">
+              <h5 className="font-medium text-gray-900 dark:text-white text-sm sm:text-base">
+                Download Progress
+              </h5>
+              {downloadProgress.isStreaming && (
+                <div className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span>Quick Download</span>
+                </div>
+              )}
+            </div>
             <DownloadProgressComponent
               progress={downloadProgress.progress}
               downloadedBytes={downloadProgress.downloadedBytes}
@@ -194,17 +203,20 @@ export function VideoPreview({ videoInfo, isDownloading, downloadProgress, onDow
             onDownload();
           }}
           disabled={isDownloading}
-          className="w-full rounded-full py-3 bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-400 hover:to-red-400 text-white shadow-lg hover:shadow-xl transition-all duration-200 text-sm sm:text-base"
+          className="w-full rounded-full py-3 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-white shadow-lg hover:shadow-xl transition-all duration-200 text-sm sm:text-base"
           size="lg"
         >
           {isDownloading ? (
-            <LoadingSpinner size="sm" text="Downloading..." />
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <span>Downloading...</span>
+            </div>
           ) : (
-            <>
-              <Download className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+            <div className="flex items-center gap-2">
+              <Download className="h-4 w-4 sm:h-5 sm:w-5" />
               <span className="hidden sm:inline">Download Video</span>
               <span className="sm:hidden">Download</span>
-            </>
+            </div>
           )}
         </Button>
 

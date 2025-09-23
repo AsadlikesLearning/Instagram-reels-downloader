@@ -102,22 +102,32 @@ export function InstagramVideoForm() {
 
   // Handle actual download from preview
   const handleDownload = async () => {
-    if (!videoInfo) return;
+    if (!videoInfo) {
+      console.log("No video info available for download");
+      return;
+    }
     
+    console.log("Starting download process...");
     setIsDownloading(true);
     setDownloadProgress(null);
     
     try {
-      console.log("downloading video:", videoInfo.videoUrl);
+      console.log("Video URL:", videoInfo.videoUrl);
+      console.log("Filename:", videoInfo.filename);
       
       // Track download event
       trackDownload(videoInfo.videoUrl, videoInfo.filename);
       
+      // Use server-side download to avoid CORS issues
       await downloadFileWithProgress(videoInfo.videoUrl, videoInfo.filename, {
+        useQuickDownload: true, // Always enable streaming download
+        chunkSize: 131072, // 128KB chunks for optimal performance
         onProgress: (progress) => {
+          console.log("Download progress:", progress.progress + "%");
           setDownloadProgress(progress);
         },
         onComplete: () => {
+          console.log("Download completed successfully!");
           // Show success animation and play sound
           setShowSuccessAnimation(true);
           playDownloadSuccess();
@@ -129,7 +139,7 @@ export function InstagramVideoForm() {
           }, 2000);
         },
         onError: (error) => {
-          console.log("Download error:", error);
+          console.error("Download error:", error);
           // Track download error
           trackError(error.message || 'Download failed', 'video_download');
           setDownloadProgress(null);
@@ -137,7 +147,7 @@ export function InstagramVideoForm() {
       });
       
     } catch (error: any) {
-      console.log("Download error:", error);
+      console.error("Download failed:", error);
       setDownloadProgress(null);
     } finally {
       setIsDownloading(false);
