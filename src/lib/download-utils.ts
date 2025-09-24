@@ -186,7 +186,13 @@ async function downloadViaServer(
     });
 
     // Use a server-side proxy to download the video
-    const proxyUrl = `/api/video-proxy?url=${encodeURIComponent(videoUrl)}&filename=${encodeURIComponent(filename)}`;
+    // Check if it's a TikTok video URL or Instagram video URL
+    const isTikTokUrl = videoUrl.includes('tiktok.com') || 
+                       videoUrl.includes('sample-videos.com') || 
+                       videoUrl.includes('commondatastorage.googleapis.com');
+    const proxyUrl = isTikTokUrl 
+      ? `/api/tiktok/download?url=${encodeURIComponent(videoUrl)}&filename=${encodeURIComponent(filename)}`
+      : `/api/video-proxy?url=${encodeURIComponent(videoUrl)}&filename=${encodeURIComponent(filename)}`;
     
     console.log("Fetching from proxy:", proxyUrl);
     const response = await fetch(proxyUrl);
@@ -197,19 +203,35 @@ async function downloadViaServer(
 
     console.log("Proxy response OK, getting blob...");
     
+    // Get content length for progress tracking
+    const contentLength = response.headers.get('content-length');
+    const totalBytes = contentLength ? parseInt(contentLength, 10) : 0;
+    
+    console.log("Content length:", totalBytes);
+
     // Show processing progress
     onProgress?.({
-      progress: 75,
+      progress: 50,
       downloadedBytes: 0,
-      totalBytes: 0,
-      speed: "Processing...",
-      timeRemaining: "Finalizing...",
+      totalBytes: totalBytes || 0,
+      speed: "Downloading...",
+      timeRemaining: "Processing video...",
       isComplete: false
     });
 
-    // Get the blob from server response
+    // Get the blob from server response with progress tracking
     const blob = await response.blob();
     console.log("Blob received, size:", blob.size);
+
+    // Update progress to 75% while creating download
+    onProgress?.({
+      progress: 75,
+      downloadedBytes: blob.size,
+      totalBytes: totalBytes || blob.size,
+      speed: "Preparing download...",
+      timeRemaining: "Almost ready...",
+      isComplete: false
+    });
 
     // Calculate actual download speed
     const endTime = Date.now();
@@ -217,6 +239,20 @@ async function downloadViaServer(
     const actualSpeed = blob.size > 0 ? blob.size / downloadTime : 0;
 
     console.log("Creating download link...");
+    
+    // Update progress to 90%
+    onProgress?.({
+      progress: 90,
+      downloadedBytes: blob.size,
+      totalBytes: totalBytes || blob.size,
+      speed: "Creating download...",
+      timeRemaining: "Finalizing...",
+      isComplete: false
+    });
+    
+    // Small delay to ensure progress is visible
+    await new Promise(resolve => setTimeout(resolve, 200));
+    
     // Create download link and trigger download
     const blobUrl = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -237,13 +273,16 @@ async function downloadViaServer(
     onProgress?.({
       progress: 100,
       downloadedBytes: blob.size,
-      totalBytes: blob.size,
+      totalBytes: totalBytes || blob.size,
       speed: formatBytes(actualSpeed) + "/s",
       timeRemaining: "0s",
       isComplete: true
     });
     
-    onComplete?.();
+    // Call onComplete after a short delay to ensure progress is visible
+    setTimeout(() => {
+      onComplete?.();
+    }, 100);
     
   } catch (error) {
     console.error("Server proxy download error:", error);
