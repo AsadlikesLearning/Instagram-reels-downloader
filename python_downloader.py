@@ -123,23 +123,26 @@ def get_video_info(url):
             }
     except Exception as e:
         error_msg = str(e)
-        # Provide more specific error messages
+        # Log the actual error for debugging
+        print(f"DEBUG: yt-dlp error: {error_msg}", file=sys.stderr)
+        
+        # Provide more specific error messages - be more precise with detection
         if '403' in error_msg or 'Forbidden' in error_msg:
             return {
                 'success': False,
                 'error': 'YouTube is blocking automated access. Please try again later or use a different video.'
             }
-        elif 'Private video' in error_msg or 'private' in error_msg.lower():
+        elif 'Private video' in error_msg or 'This video is private' in error_msg:
             return {
                 'success': False,
                 'error': 'This video is private and cannot be accessed.'
             }
-        elif 'age-restricted' in error_msg.lower():
+        elif 'age-restricted' in error_msg.lower() and 'video' in error_msg.lower():
             return {
                 'success': False,
                 'error': 'This video is age-restricted and cannot be accessed.'
             }
-        elif 'Video unavailable' in error_msg or 'unavailable' in error_msg.lower():
+        elif 'Video unavailable' in error_msg or 'This video is unavailable' in error_msg:
             return {
                 'success': False,
                 'error': 'This video is unavailable or has been removed.'

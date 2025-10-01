@@ -98,15 +98,19 @@ export async function GET(request: Request) {
       // Enhanced error handling for different failure scenarios
       const errorMessage = ytdlpResult.error || "Failed to extract video info";
       
+      // Log the actual error for debugging
+      console.log("YouTube extraction failed with error:", errorMessage);
+      
       if (errorMessage.includes('403') || errorMessage.includes('Forbidden')) {
         throw new Error("YouTube is blocking automated access. Please try again later or use a different video.");
-      } else if (errorMessage.includes('Private video') || errorMessage.includes('private')) {
+      } else if (errorMessage.includes('This video is private') || errorMessage.includes('Private video')) {
         throw new Error("This video is private and cannot be accessed.");
-      } else if (errorMessage.includes('age-restricted') || errorMessage.includes('Age-restricted')) {
+      } else if (errorMessage.includes('age-restricted') && errorMessage.includes('video')) {
         throw new Error("This video is age-restricted and cannot be accessed.");
-      } else if (errorMessage.includes('Video unavailable') || errorMessage.includes('unavailable')) {
+      } else if (errorMessage.includes('This video is unavailable') || errorMessage.includes('Video unavailable')) {
         throw new Error("This video is unavailable or has been removed.");
       } else {
+        // For debugging - show the actual error message
         throw new Error(`Failed to extract video info: ${errorMessage}`);
       }
     }
