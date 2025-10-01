@@ -1,10 +1,10 @@
 "use client";
 
 import React from "react";
-import { Instagram, Music } from "lucide-react";
+import { Instagram, Music, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export type Platform = "instagram" | "tiktok";
+export type Platform = "instagram" | "tiktok" | "youtube";
 
 interface PlatformSwitcherProps {
   currentPlatform: Platform;
@@ -45,6 +45,21 @@ export function PlatformSwitcher({
         <Music className="mr-2 h-5 w-5" />
         TikTok
         {currentPlatform === "tiktok" && (
+          <div className="absolute -top-1 -right-1 w-3 h-3 bg-white rounded-full animate-pulse"></div>
+        )}
+      </Button>
+      
+      <Button
+        onClick={() => onPlatformChange("youtube")}
+        className={`relative rounded-2xl px-6 py-3 transition-all duration-300 font-semibold ${
+          currentPlatform === "youtube"
+            ? "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-xl scale-105"
+            : "bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-600 hover:scale-105 border border-gray-200 dark:border-gray-600"
+        }`}
+      >
+        <Play className="mr-2 h-5 w-5" />
+        YouTube
+        {currentPlatform === "youtube" && (
           <div className="absolute -top-1 -right-1 w-3 h-3 bg-white rounded-full animate-pulse"></div>
         )}
       </Button>

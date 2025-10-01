@@ -48,7 +48,7 @@ export function TikTokVideoForm() {
   // Watch the form field to make button state reactive
   const videoUrl = form.watch("videoUrl");
   
-  // Check if URL is valid using a simple regex
+  // Check if URL is valid and belongs to TikTok
   const isValidUrl = (url: string) => {
     try {
       new URL(url);
@@ -57,8 +57,17 @@ export function TikTokVideoForm() {
       return false;
     }
   };
+  const isTikTokUrl = (url: string) => {
+    try {
+      const u = new URL(url);
+      const host = u.hostname.toLowerCase();
+      return host.includes('tiktok.com') || host.includes('vm.tiktok.com');
+    } catch {
+      return false;
+    }
+  }
   
-  const isFormValid = videoUrl && videoUrl.trim() !== "" && isValidUrl(videoUrl.trim());
+  const isFormValid = !!(videoUrl && videoUrl.trim() !== "" && isValidUrl(videoUrl.trim()) && isTikTokUrl(videoUrl.trim()));
 
   const httpError = getHttpErrorMessage(error);
 
@@ -85,6 +94,9 @@ export function TikTokVideoForm() {
       // Track search event
       trackSearch(videoUrl);
       
+      if (!isTikTokUrl(videoUrl)) {
+        throw new Error('Please enter a valid TikTok link');
+      }
       const response = await fetch(`/api/tiktok/video?url=${encodeURIComponent(videoUrl)}`);
       const data = await response.json();
       
@@ -250,13 +262,13 @@ export function TikTokVideoForm() {
           {/* Help Text */}
           <div className="text-center">
             <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm mb-2">
-              Paste a link from TikTok to download the video
+              Paste a TikTok link (tiktok.com or vm.tiktok.com)
             </p>
             {!isFormValid ? (
               <p className="text-gray-400 dark:text-gray-500 text-xs">
                 {!videoUrl || videoUrl.trim() === "" 
                   ? "Enter a TikTok video URL to enable the download button"
-                  : "Please enter a valid TikTok video URL"
+                  : "Please enter a valid TikTok URL (tiktok.com or vm.tiktok.com)"
                 }
               </p>
             ) : (

@@ -118,8 +118,8 @@ This document outlines the comprehensive SEO optimizations implemented in the FI
 - Instagram video saver tool
 
 ### Platform-specific Keywords
-- TikTok downloader (coming soon)
-- YouTube downloader (coming soon)
+- TikTok downloader (FULL SUPPORT)
+- YouTube downloader (FULL SUPOORT)
 - Facebook video downloader (coming soon)
 
 ## 🔧 Implementation Details

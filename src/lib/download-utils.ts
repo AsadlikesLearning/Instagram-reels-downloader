@@ -28,13 +28,18 @@ export async function downloadFileWithProgress(
     console.log("Video URL:", videoUrl);
     console.log("Filename:", filename);
     
-    // Show initial progress
+    // Validate inputs
+    if (!videoUrl || !filename) {
+      throw new Error("Invalid video URL or filename");
+    }
+
+    // Show initial progress with better feedback
     onProgress?.({
       progress: 0,
       downloadedBytes: 0,
       totalBytes: 0,
-      speed: "Starting...",
-      timeRemaining: "Calculating...",
+      speed: "Initializing...",
+      timeRemaining: "Preparing download...",
       isComplete: false,
       isStreaming: useQuickDownload
     });
@@ -45,7 +50,8 @@ export async function downloadFileWithProgress(
     
   } catch (error) {
     console.error("Download error:", error);
-    onError?.(error as Error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown download error';
+    onError?.(new Error(errorMessage));
     throw error;
   }
 }
@@ -93,26 +99,26 @@ async function downloadWithStreaming(
       chunks.push(value);
       downloadedBytes += value.length;
 
-      // Update progress every 100ms or every 64KB
-      const now = Date.now();
-      if (now - lastUpdateTime > 100 || downloadedBytes - lastDownloadedBytes > chunkSize) {
-        const progress = totalBytes > 0 ? Math.min((downloadedBytes / totalBytes) * 100, 99) : 0;
-        const speed = calculateSpeed(downloadedBytes, startTime, now);
-        const timeRemaining = calculateTimeRemaining(downloadedBytes, totalBytes, speed);
+    // Update progress every 200ms or every 128KB for smoother updates
+    const now = Date.now();
+    if (now - lastUpdateTime > 200 || downloadedBytes - lastDownloadedBytes > chunkSize * 2) {
+      const progress = totalBytes > 0 ? Math.min((downloadedBytes / totalBytes) * 100, 99) : 0;
+      const speed = calculateSpeed(downloadedBytes, startTime, now);
+      const timeRemaining = calculateTimeRemaining(downloadedBytes, totalBytes, speed);
 
-        onProgress?.({
-          progress,
-          downloadedBytes,
-          totalBytes,
-          speed,
-          timeRemaining,
-          isComplete: false,
-          isStreaming: true
-        });
+      onProgress?.({
+        progress,
+        downloadedBytes,
+        totalBytes,
+        speed,
+        timeRemaining,
+        isComplete: false,
+        isStreaming: true
+      });
 
-        lastUpdateTime = now;
-        lastDownloadedBytes = downloadedBytes;
-      }
+      lastUpdateTime = now;
+      lastDownloadedBytes = downloadedBytes;
+    }
     }
 
     // Combine all chunks into a single blob
@@ -175,30 +181,53 @@ async function downloadViaServer(
   try {
     console.log("Starting server proxy download...");
     
-    // Show downloading progress
+    // Show initial progress with better messaging
     onProgress?.({
-      progress: 25,
+      progress: 5,
       downloadedBytes: 0,
       totalBytes: 0,
-      speed: "Downloading...",
-      timeRemaining: "Processing...",
+      speed: "Connecting to server...",
+      timeRemaining: "Initializing...",
       isComplete: false
     });
 
     // Use a server-side proxy to download the video
-    // Check if it's a TikTok video URL or Instagram video URL
+    // Check if it's a TikTok, YouTube, or Instagram video URL
     const isTikTokUrl = videoUrl.includes('tiktok.com') || 
                        videoUrl.includes('sample-videos.com') || 
                        videoUrl.includes('commondatastorage.googleapis.com');
-    const proxyUrl = isTikTokUrl 
-      ? `/api/tiktok/download?url=${encodeURIComponent(videoUrl)}&filename=${encodeURIComponent(filename)}`
-      : `/api/video-proxy?url=${encodeURIComponent(videoUrl)}&filename=${encodeURIComponent(filename)}`;
+    const isYouTubeUrl = videoUrl.includes('youtube.com') || 
+                         videoUrl.includes('youtu.be');
+    
+    let proxyUrl;
+    if (isTikTokUrl) {
+      proxyUrl = `/api/tiktok/download?url=${encodeURIComponent(videoUrl)}&filename=${encodeURIComponent(filename)}`;
+    } else if (isYouTubeUrl) {
+      proxyUrl = `/api/youtube/download?url=${encodeURIComponent(videoUrl)}&filename=${encodeURIComponent(filename)}`;
+    } else {
+      proxyUrl = `/api/video-proxy?url=${encodeURIComponent(videoUrl)}&filename=${encodeURIComponent(filename)}`;
+    }
     
     console.log("Fetching from proxy:", proxyUrl);
-    const response = await fetch(proxyUrl);
+    
+    // Update progress before making request
+    onProgress?.({
+      progress: 15,
+      downloadedBytes: 0,
+      totalBytes: 0,
+      speed: "Requesting video...",
+      timeRemaining: "Connecting...",
+      isComplete: false
+    });
+
+    const response = await fetch(proxyUrl, {
+      // Add timeout and better error handling
+      signal: AbortSignal.timeout(30000) // 30 second timeout
+    });
 
     if (!response.ok) {
-      throw new Error(`Failed to download video: ${response.status} ${response.statusText}`);
+      const errorText = await response.text().catch(() => 'Unknown error');
+      throw new Error(`Failed to download video: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
     console.log("Proxy response OK, getting blob...");
@@ -209,13 +238,13 @@ async function downloadViaServer(
     
     console.log("Content length:", totalBytes);
 
-    // Show processing progress
+    // Show processing progress with better messaging
     onProgress?.({
-      progress: 50,
+      progress: 30,
       downloadedBytes: 0,
       totalBytes: totalBytes || 0,
-      speed: "Downloading...",
-      timeRemaining: "Processing video...",
+      speed: "Downloading video...",
+      timeRemaining: "Processing...",
       isComplete: false
     });
 
@@ -223,9 +252,9 @@ async function downloadViaServer(
     const blob = await response.blob();
     console.log("Blob received, size:", blob.size);
 
-    // Update progress to 75% while creating download
+    // Update progress to show we're preparing the download
     onProgress?.({
-      progress: 75,
+      progress: 80,
       downloadedBytes: blob.size,
       totalBytes: totalBytes || blob.size,
       speed: "Preparing download...",
@@ -240,7 +269,7 @@ async function downloadViaServer(
 
     console.log("Creating download link...");
     
-    // Update progress to 90%
+    // Update progress to show we're creating the download
     onProgress?.({
       progress: 90,
       downloadedBytes: blob.size,
@@ -251,7 +280,7 @@ async function downloadViaServer(
     });
     
     // Small delay to ensure progress is visible
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await new Promise(resolve => setTimeout(resolve, 300));
     
     // Create download link and trigger download
     const blobUrl = window.URL.createObjectURL(blob);
@@ -282,11 +311,12 @@ async function downloadViaServer(
     // Call onComplete after a short delay to ensure progress is visible
     setTimeout(() => {
       onComplete?.();
-    }, 100);
+    }, 200);
     
   } catch (error) {
     console.error("Server proxy download error:", error);
-    onError?.(error as Error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown server error';
+    onError?.(new Error(errorMessage));
     throw error;
   }
 }
@@ -403,7 +433,31 @@ function calculateTimeRemaining(downloadedBytes: number, totalBytes: number, spe
   if (totalBytes === 0 || downloadedBytes === 0) return "Calculating...";
   
   const remainingBytes = totalBytes - downloadedBytes;
-  const speedBytes = parseFloat(speed.replace(/[^\d.]/g, '')) * 1024; // Convert to bytes
+  if (remainingBytes <= 0) return "0s";
+  
+  // Extract numeric value and unit from speed string
+  const speedMatch = speed.match(/(\d+(?:\.\d+)?)\s*([KMGT]?B)/);
+  if (!speedMatch) return "Calculating...";
+  
+  const speedValue = parseFloat(speedMatch[1]);
+  const speedUnit = speedMatch[2];
+  
+  // Convert to bytes per second
+  let speedBytes = speedValue;
+  switch (speedUnit) {
+    case 'KB':
+      speedBytes *= 1024;
+      break;
+    case 'MB':
+      speedBytes *= 1024 * 1024;
+      break;
+    case 'GB':
+      speedBytes *= 1024 * 1024 * 1024;
+      break;
+    case 'TB':
+      speedBytes *= 1024 * 1024 * 1024 * 1024;
+      break;
+  }
   
   if (speedBytes === 0) return "Calculating...";
   

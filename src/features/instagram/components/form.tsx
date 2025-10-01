@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback, memo, useEffect } from "react";
 
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -19,6 +19,7 @@ import {
 
 import { Input } from "@/components/ui/input";
 import { VideoPreview } from "@/components/video-preview";
+import { VideoPreviewSkeleton } from "@/components/video-preview-skeleton";
 import { LoadingSpinner, CuteLoadingAnimation } from "@/components/ui/loading-spinner";
 import { useSounds } from "@/lib/sounds";
 
@@ -35,7 +36,7 @@ const formSchema = z.object({
   }),
 });
 
-export function InstagramVideoForm() {
+const InstagramVideoForm = memo(function InstagramVideoForm() {
   const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
@@ -49,12 +50,15 @@ export function InstagramVideoForm() {
   });
 
   const { error, isPending, mutateAsync: getVideoInfo } = useVideoInfo();
+  const [isFetchingPreview, setIsFetchingPreview] = useState(false);
+  const [prefetchData, setPrefetchData] = useState<VideoInfo | null>(null);
+  const [isPrefetching, setIsPrefetching] = useState(false);
   const { playDownloadSuccess, playClick } = useSounds();
   
   // Watch the form field to make button state reactive
   const postUrl = form.watch("postUrl");
   
-  // Check if URL is valid using a simple regex
+  // Check if URL is valid and belongs to Instagram
   const isValidUrl = (url: string) => {
     try {
       new URL(url);
@@ -63,13 +67,46 @@ export function InstagramVideoForm() {
       return false;
     }
   };
+  const isInstagramUrl = (url: string) => {
+    try {
+      const u = new URL(url);
+      const host = u.hostname.toLowerCase();
+      return host.includes('instagram.com');
+    } catch {
+      return false;
+    }
+  }
   
-  const isFormValid = postUrl && postUrl.trim() !== "" && isValidUrl(postUrl.trim());
+  const isFormValid = !!(postUrl && postUrl.trim() !== "" && isValidUrl(postUrl.trim()) && isInstagramUrl(postUrl.trim()));
 
   const httpError = getHttpErrorMessage(error);
 
+  // Debounced prefetching for faster preview
+  useEffect(() => {
+    if (!isFormValid || !postUrl.trim()) {
+      setPrefetchData(null);
+      return;
+    }
+
+    const timeoutId = setTimeout(async () => {
+      try {
+        setIsPrefetching(true);
+        const data = await getVideoInfo({ postUrl: postUrl.trim() });
+        setPrefetchData(data);
+      } catch (error) {
+        // Silently fail prefetch - user will see error on actual submit
+        console.log("Prefetch failed:", error);
+        setPrefetchData(null);
+      } finally {
+        setIsPrefetching(false);
+      }
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [postUrl, isFormValid, getVideoInfo]);
+
   // Handle paste from clipboard
-  const handlePaste = async () => {
+  const handlePaste = useCallback(async () => {
     try {
       const text = await navigator.clipboard.readText();
       if (text) {
@@ -79,7 +116,7 @@ export function InstagramVideoForm() {
       console.log("Failed to read clipboard:", err);
       // If clipboard API fails, we'll just ignore it silently
     }
-  };
+  }, [form]);
 
   // Handle form submission - get video info for preview
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -89,6 +126,17 @@ export function InstagramVideoForm() {
       // Track search event
       trackSearch(postUrl);
       
+      // Use prefetched data if available, otherwise fetch
+      if (prefetchData && prefetchData.videoUrl) {
+        console.log("Using prefetched data for instant preview");
+        setVideoInfo(prefetchData);
+        playDownloadSuccess();
+        return;
+      }
+      
+      // Show skeleton immediately while fetching
+      setIsFetchingPreview(true);
+      // Fire the request
       const videoData = await getVideoInfo({ postUrl });
       setVideoInfo(videoData);
       // Play success sound when preview is ready
@@ -97,6 +145,9 @@ export function InstagramVideoForm() {
       console.log(error);
       // Track error event
       trackError(error.message || 'Unknown error', 'video_info_fetch');
+    }
+    finally {
+      setIsFetchingPreview(false);
     }
   }
 
@@ -155,10 +206,10 @@ export function InstagramVideoForm() {
   };
 
   // Handle back to search
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     setVideoInfo(null);
     form.reset();
-  };
+  }, [form]);
 
   // Show preview if we have video info
   if (videoInfo) {
@@ -174,9 +225,14 @@ export function InstagramVideoForm() {
   }
   
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-4 sm:p-6 lg:p-8 backdrop-blur-sm">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.06)] border border-gray-100 dark:border-gray-700 p-4 sm:p-6 lg:p-8 backdrop-blur-sm">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
+          {isFetchingPreview && (
+            <div className="mb-4">
+              <VideoPreviewSkeleton />
+            </div>
+          )}
           {/* Error Message */}
           {httpError && (
             <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 text-red-600 dark:text-red-400 text-sm">
@@ -245,13 +301,13 @@ export function InstagramVideoForm() {
           {/* Help Text */}
           <div className="text-center">
             <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm mb-2">
-              Paste a link from Instagram to download the video
+              Paste an Instagram link (instagram.com)
             </p>
             {!isFormValid ? (
               <p className="text-gray-400 dark:text-gray-500 text-xs">
                 {!postUrl || postUrl.trim() === "" 
-                  ? "Enter a video URL to enable the download button"
-                  : "Please enter a valid video URL"
+                  ? "Enter an Instagram video URL to enable the download button"
+                  : "Please enter a valid Instagram URL (instagram.com)"
                 }
               </p>
             ) : (
@@ -264,5 +320,7 @@ export function InstagramVideoForm() {
       </Form>
     </div>
   );
-}
+});
+
+export { InstagramVideoForm };
 

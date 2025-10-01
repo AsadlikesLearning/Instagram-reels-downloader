@@ -11,8 +11,8 @@ interface SEOHeadProps {
 }
 
 export function generateSEOMetadata({
-  title = "FINTOK - Free Instagram Video Downloader | Download Instagram Reels & Videos",
-  description = "Download Instagram videos, reels, and stories for free with FINTOK. Fast, secure, and easy-to-use Instagram video downloader. No registration required.",
+  title = "FINTOK - Free Video Downloader | Download Instagram, TikTok & YouTube Videos",
+  description = "Download videos from Instagram, TikTok, and YouTube for free with FINTOK. Fast, secure, and easy-to-use multi-platform video downloader. No registration required.",
   keywords = [
   "insta video downloader",
   "instagram reels download",
@@ -29,7 +29,14 @@ export function generateSEOMetadata({
   "insta videodownload",
   "instagram stories downloader",
   "instagram video down",
-  "instavideodownload"
+  "instavideodownload",
+  "youtube video downloader",
+  "download youtube videos",
+  "youtube mp4 downloader",
+  "tiktok video downloader",
+  "download tiktok videos",
+  "multi platform downloader",
+  "free video downloader"
   ],
   canonical,
   ogImage = "/images/open-graph.png",
@@ -140,8 +147,8 @@ export const defaultStructuredData = {
   "@context": "https://schema.org",
   "@type": "WebApplication",
   "name": "FINTOK",
-  "alternateName": ["FINTOK Downloader", "Instagram Video Downloader", "Social Media Downloader"],
-  "description": "Free Instagram video downloader for downloading Instagram videos, reels, and stories. Fast, secure, and easy-to-use video downloader with no registration required.",
+  "alternateName": ["FINTOK Downloader", "Multi-Platform Video Downloader", "Social Media Downloader"],
+  "description": "Free multi-platform video downloader for downloading videos from Instagram, TikTok, and YouTube. Fast, secure, and easy-to-use video downloader with no registration required.",
   "url": "https://fintok.com",
   "applicationCategory": ["MultimediaApplication", "ProductivityApplication", "UtilityApplication"],
   "operatingSystem": "Web Browser",
@@ -178,13 +185,15 @@ export const defaultStructuredData = {
     "Download Instagram Videos",
     "Download Instagram Reels", 
     "Download Instagram Stories",
+    "Download TikTok Videos",
+    "Download YouTube Videos",
     "High Quality Downloads",
     "Fast Processing",
     "No Registration Required",
     "Mobile Friendly",
     "Secure and Private",
     "Multiple Format Support",
-    "Batch Download Support"
+    "Multi-Platform Support"
   ],
   "screenshot": "https://fintok.com/images/open-graph.png",
   "softwareHelp": "https://fintok.com/how-it-works",

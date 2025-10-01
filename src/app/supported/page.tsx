@@ -29,12 +29,12 @@ export default function SupportedPage() {
     {
       name: "TikTok",
       description: "Download TikTok videos without watermarks",
-      status: "Coming Soon"
+      status: "Full Support"
     },
     {
       name: "YouTube",
       description: "Download YouTube videos in various qualities",
-      status: "Coming Soon"
+      status: "Full Support"
     },
     {
       name: "Facebook",

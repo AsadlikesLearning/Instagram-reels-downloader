@@ -20,16 +20,22 @@ export function Navbar() {
           "w-full items-center border-b border-border/40"
         )}
       >
-        <div className="flex items-center gap-2">
-          <div className="h-6 w-6 sm:h-8 sm:w-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-            <svg className="h-3 w-3 sm:h-4 sm:w-4 text-white fill-white" viewBox="0 0 24 24">
-              <path d="M8 5v14l11-7z"/>
+        <Link href="/" className="group flex items-center gap-2 sm:gap-3" aria-label="FINTOK Home">
+          <div className="relative h-7 w-7 sm:h-9 sm:w-9 rounded-xl overflow-hidden ring-1 ring-white/20 dark:ring-white/10 shadow-sm">
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-500 via-pink-500 to-fuchsia-600" />
+            <div className="absolute inset-0 opacity-30 group-hover:opacity-40 transition-opacity" style={{ background:
+              "radial-gradient(circle at 30% 30%, rgba(255,255,255,0.6), transparent 40%), radial-gradient(circle at 70% 70%, rgba(255,255,255,0.25), transparent 45%)" }} />
+            <svg className="relative z-[1] m-auto h-full w-full p-2 text-white" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M8 5v14l11-7z" fill="currentColor" />
             </svg>
           </div>
-          <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-            FINTOK
-          </span>
-        </div>
+          <div className="flex flex-col leading-tight">
+            <span className="text-base sm:text-lg font-extrabold tracking-tight bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-600 bg-clip-text text-transparent group-hover:brightness-110 transition-[filter]">
+              FINTOK
+            </span>
+            <span className="hidden sm:block text-[10px] font-medium text-muted-foreground/80 group-hover:text-muted-foreground">Video Downloader</span>
+          </div>
+        </Link>
         <MobileNav className="md:hidden" />
         <div className="ml-auto flex items-center gap-2 sm:gap-4">
           <MegaMenu className="hidden md:block" />

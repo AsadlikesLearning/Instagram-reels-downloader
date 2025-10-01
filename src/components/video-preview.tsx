@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useCallback, memo } from "react";
 import Image from "next/image";
 import { Download, Play, Eye, Clock, Calendar, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ interface VideoPreviewProps {
   downloadProgress?: DownloadProgress | null;
   onDownload: () => void;
   onBack: () => void;
+  downloadType?: 'video' | 'audio';
 }
 
 const formatDuration = (seconds: number): string => {
@@ -43,26 +44,34 @@ const formatTimeAgo = (timestamp: number): string => {
   return `${Math.floor(diff / 86400)}d ago`;
 };
 
-export function VideoPreview({ videoInfo, isDownloading, downloadProgress, onDownload, onBack }: VideoPreviewProps) {
+const VideoPreview = memo(function VideoPreview({ videoInfo, isDownloading, downloadProgress, onDownload, onBack, downloadType = 'video' }: VideoPreviewProps) {
   const { playClick, playDownloadSuccess } = useSounds();
   const [showSuccessAnimation, setShowSuccessAnimation] = React.useState(false);
 
+  // Memoize callback functions to prevent unnecessary re-renders
+  const handleDownload = useCallback(() => {
+    playClick();
+    onDownload();
+  }, [playClick, onDownload]);
+
+  const handleBack = useCallback(() => {
+    playClick();
+    onBack();
+  }, [playClick, onBack]);
+
   return (
-    <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/30 dark:border-gray-700/30 p-6 sm:p-8 animate-fade-in-up prevent-overflow">
+    <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] border border-white/30 dark:border-gray-700/30 p-6 sm:p-8 animate-fade-in-up prevent-overflow">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-3">
         <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">Video Preview</h3>
         {/* Desktop Back Button */}
         <Button 
-          onClick={() => {
-            playClick();
-            onBack();
-          }}
+          onClick={handleBack}
           className="hidden sm:flex text-xs sm:text-sm w-auto rounded-full px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-400 hover:to-cyan-400 text-white shadow-md hover:shadow-lg transition-all duration-200 font-medium"
         >
           <svg className="mr-2 h-3 w-3 sm:h-4 sm:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
-          Back to Search
+        Go Back
         </Button>
       </div>
 
@@ -192,46 +201,51 @@ export function VideoPreview({ videoInfo, isDownloading, downloadProgress, onDow
               totalBytes={downloadProgress.totalBytes}
               speed={downloadProgress.speed}
               timeRemaining={downloadProgress.timeRemaining}
+              isStreaming={downloadProgress.isStreaming}
             />
           </div>
         )}
 
         {/* Download Button */}
         <Button
-          onClick={() => {
-            playClick();
-            onDownload();
-          }}
+          onClick={handleDownload}
           disabled={isDownloading}
-          className="w-full rounded-2xl py-4 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 hover:from-purple-400 hover:via-pink-400 hover:to-purple-400 text-white shadow-xl hover:shadow-2xl transition-all duration-300 text-base font-semibold hover:scale-105 disabled:scale-100 disabled:opacity-70"
+          className={`w-full rounded-2xl py-4 text-white shadow-xl hover:shadow-2xl transition-all duration-300 text-base font-semibold hover:scale-105 disabled:scale-100 disabled:opacity-70 ${
+            downloadType === 'audio'
+              ? 'bg-gradient-to-r from-green-500 via-emerald-500 to-green-500 hover:from-green-400 hover:via-emerald-400 hover:to-green-400'
+              : 'bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 hover:from-purple-400 hover:via-pink-400 hover:to-purple-400'
+          }`}
           size="lg"
         >
           {isDownloading ? (
             <div className="flex items-center gap-3">
               <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              <span>Downloading...</span>
+              <span>Downloading {downloadType === 'audio' ? 'MP3' : 'Video'}...</span>
             </div>
           ) : (
             <div className="flex items-center gap-3">
-              <Download className="h-5 w-5" />
-              <span>Download Video</span>
+              {downloadType === 'audio' ? (
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                </svg>
+              ) : (
+                <Download className="h-5 w-5" />
+              )}
+              <span>Download {downloadType === 'audio' ? 'MP3' : 'Video'}</span>
             </div>
           )}
         </Button>
 
         {/* Mobile Back Button */}
         <Button
-          onClick={() => {
-            playClick();
-            onBack();
-          }}
+          onClick={handleBack}
           className="sm:hidden w-full rounded-full py-3 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-400 hover:to-cyan-400 text-white shadow-lg hover:shadow-xl transition-all duration-200 text-sm font-medium"
           size="lg"
         >
           <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
-          Back to Search
+          Download Another Video
         </Button>
 
         {/* Help Text */}
@@ -241,4 +255,6 @@ export function VideoPreview({ videoInfo, isDownloading, downloadProgress, onDow
       </div>
     </div>
   );
-}
+});
+
+export { VideoPreview };
