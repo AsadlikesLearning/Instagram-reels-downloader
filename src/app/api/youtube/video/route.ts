@@ -54,6 +54,11 @@ export async function GET(request: Request) {
     if (ytdlpResult.success && ytdlpResult.metadata) {
       console.log("yt-dlp extraction successful");
       
+      // Validate that we have required metadata
+      if (!ytdlpResult.metadata.title) {
+        throw new Error("Failed to extract video title. The video may be private, age-restricted, or unavailable.");
+      }
+      
       // Convert yt-dlp metadata to YouTubeVideoInfo format
       const videoInfo: YouTubeVideoInfo = {
         id: videoUrl.split('v=')[1]?.split('&')[0] || 'unknown',
@@ -61,21 +66,21 @@ export async function GET(request: Request) {
         thumbnailUrl: ytdlpResult.metadata.thumbnail_url || "",
         title: ytdlpResult.metadata.title,
         description: ytdlpResult.metadata.description || "",
-        duration: ytdlpResult.metadata.duration,
+        duration: ytdlpResult.metadata.duration || 0,
         width: "1920",
         height: "1080",
         filename: generateYouTubeFilename(ytdlpResult.metadata.title, videoUrl.split('v=')[1]?.split('&')[0] || 'unknown'),
         size: 0,
         owner: {
-          username: ytdlpResult.metadata.uploader,
-          fullName: ytdlpResult.metadata.uploader,
+          username: ytdlpResult.metadata.uploader || "Unknown",
+          fullName: ytdlpResult.metadata.uploader || "Unknown",
           profilePicUrl: "",
           isVerified: false,
         },
         stats: {
-          likes: ytdlpResult.metadata.like_count,
-          comments: ytdlpResult.metadata.comment_count,
-          views: ytdlpResult.metadata.view_count,
+          likes: ytdlpResult.metadata.like_count || 0,
+          comments: ytdlpResult.metadata.comment_count || 0,
+          views: ytdlpResult.metadata.view_count || 0,
         },
         postedAt: Date.now() / 1000,
         tags: ytdlpResult.metadata.tags || [],
@@ -90,7 +95,20 @@ export async function GET(request: Request) {
       const response_data = makeSuccessResponse<YouTubeVideoInfo>(videoInfo);
       return NextResponse.json(response_data, { status: 200 });
     } else {
-      throw new Error(ytdlpResult.error || "Failed to extract video info");
+      // Enhanced error handling for different failure scenarios
+      const errorMessage = ytdlpResult.error || "Failed to extract video info";
+      
+      if (errorMessage.includes('403') || errorMessage.includes('Forbidden')) {
+        throw new Error("YouTube is blocking automated access. Please try again later or use a different video.");
+      } else if (errorMessage.includes('Private video') || errorMessage.includes('private')) {
+        throw new Error("This video is private and cannot be accessed.");
+      } else if (errorMessage.includes('age-restricted') || errorMessage.includes('Age-restricted')) {
+        throw new Error("This video is age-restricted and cannot be accessed.");
+      } else if (errorMessage.includes('Video unavailable') || errorMessage.includes('unavailable')) {
+        throw new Error("This video is unavailable or has been removed.");
+      } else {
+        throw new Error(`Failed to extract video info: ${errorMessage}`);
+      }
     }
   } catch (error: any) {
     console.error("YouTube extraction error:", error);

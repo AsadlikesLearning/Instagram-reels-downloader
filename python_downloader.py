@@ -93,6 +93,20 @@ def get_video_info(url):
         with YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
             
+            # Check if info extraction was successful
+            if info is None:
+                return {
+                    'success': False,
+                    'error': 'Failed to extract video information. The video may be private, age-restricted, or unavailable.'
+                }
+            
+            # Validate that we have at least a title
+            if not info.get('title'):
+                return {
+                    'success': False,
+                    'error': 'Video title not found. The video may be private, age-restricted, or unavailable.'
+                }
+            
             return {
                 'success': True,
                 'data': {
@@ -108,10 +122,33 @@ def get_video_info(url):
                 }
             }
     except Exception as e:
-        return {
-            'success': False,
-            'error': str(e)
-        }
+        error_msg = str(e)
+        # Provide more specific error messages
+        if '403' in error_msg or 'Forbidden' in error_msg:
+            return {
+                'success': False,
+                'error': 'YouTube is blocking automated access. Please try again later or use a different video.'
+            }
+        elif 'Private video' in error_msg or 'private' in error_msg.lower():
+            return {
+                'success': False,
+                'error': 'This video is private and cannot be accessed.'
+            }
+        elif 'age-restricted' in error_msg.lower():
+            return {
+                'success': False,
+                'error': 'This video is age-restricted and cannot be accessed.'
+            }
+        elif 'Video unavailable' in error_msg or 'unavailable' in error_msg.lower():
+            return {
+                'success': False,
+                'error': 'This video is unavailable or has been removed.'
+            }
+        else:
+            return {
+                'success': False,
+                'error': f'Failed to extract video info: {error_msg}'
+            }
 
 def download_video(url, output_path, filename=None, audio_only=False):
     """Download a single YouTube video or audio and return result"""

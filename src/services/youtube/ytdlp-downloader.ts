@@ -373,6 +373,22 @@ export class YouTubeYtDlpDownloader {
         };
       }
 
+      // Validate that we have the required data structure
+      if (!data.data) {
+        return {
+          success: false,
+          error: 'Invalid response from Python script. No data received.',
+        };
+      }
+
+      // Validate that we have at least a title
+      if (!data.data.title) {
+        return {
+          success: false,
+          error: 'Video title not found. The video may be private, age-restricted, or unavailable.',
+        };
+      }
+
       const metadata = {
         title: data.data.title || 'YouTube Video',
         duration: data.data.duration || 0,
@@ -394,9 +410,25 @@ export class YouTubeYtDlpDownloader {
       };
     } catch (error: any) {
       console.error('Failed to get YouTube video info:', error);
+      
+      // Provide more specific error messages based on the error type
+      let errorMessage = error.message || 'Failed to get video info';
+      
+      if (error.message && error.message.includes('timeout')) {
+        errorMessage = 'Request timed out. Please try again.';
+      } else if (error.message && error.message.includes('403')) {
+        errorMessage = 'YouTube is blocking automated access. Please try again later or use a different video.';
+      } else if (error.message && error.message.includes('Private video')) {
+        errorMessage = 'This video is private and cannot be accessed.';
+      } else if (error.message && error.message.includes('age-restricted')) {
+        errorMessage = 'This video is age-restricted and cannot be accessed.';
+      } else if (error.message && error.message.includes('unavailable')) {
+        errorMessage = 'This video is unavailable or has been removed.';
+      }
+      
       return {
         success: false,
-        error: error.message || 'Failed to get video info',
+        error: errorMessage,
       };
     }
   }
