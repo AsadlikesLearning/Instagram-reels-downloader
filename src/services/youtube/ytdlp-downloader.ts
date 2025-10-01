@@ -119,7 +119,7 @@ export class YouTubeYtDlpDownloader {
       });
 
       // Set timeout for better performance (configurable via env)
-      const infoTimeoutMs = Number(process.env.YT_INFO_TIMEOUT_MS || '60000');
+      const infoTimeoutMs = Number(process.env.YT_INFO_TIMEOUT_MS || '120000'); // Increased to 2 minutes
       const downloadTimeoutMs = Number(process.env.YT_DOWNLOAD_TIMEOUT_MS || '300000');
       const timeoutMs = action === 'info' ? infoTimeoutMs : downloadTimeoutMs;
       const timeout = setTimeout(() => {

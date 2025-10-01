@@ -87,9 +87,20 @@ def get_video_info(url):
         'simulate': True,  # Don't download, just extract info
         'progress': False,
         'logger': QuietLogger(),
+        # Additional performance optimizations
+        'socket_timeout': 30,
+        'retries': 2,
+        'fragment_retries': 2,
+        'skip_unavailable_fragments': True,
+        'sleep_interval': 0,
+        'max_sleep_interval': 0,
+        'http_chunk_size': 1048576,  # 1MB chunks
+        'concurrent_fragment_downloads': 1,
+        'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
     }
 
     try:
+        # Try with optimized settings first
         with YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
             
@@ -124,34 +135,74 @@ def get_video_info(url):
     except Exception as e:
         error_msg = str(e)
         # Log the actual error for debugging
-        print(f"DEBUG: yt-dlp error: {error_msg}", file=sys.stderr)
+        print(f"DEBUG: yt-dlp error (first attempt): {error_msg}", file=sys.stderr)
         
-        # Provide more specific error messages - be more precise with detection
-        if '403' in error_msg or 'Forbidden' in error_msg:
-            return {
-                'success': False,
-                'error': 'YouTube is blocking automated access. Please try again later or use a different video.'
+        # Try fallback with simpler settings
+        try:
+            print("DEBUG: Trying fallback with simpler settings...", file=sys.stderr)
+            fallback_opts = {
+                'quiet': True,
+                'no_warnings': True,
+                'extract_flat': False,
+                'simulate': True,
+                'no_check_certificate': True,
+                'ignoreerrors': True,
+                'socket_timeout': 15,
+                'retries': 1,
+                'logger': QuietLogger(),
             }
-        elif 'Private video' in error_msg or 'This video is private' in error_msg:
-            return {
-                'success': False,
-                'error': 'This video is private and cannot be accessed.'
-            }
-        elif 'age-restricted' in error_msg.lower() and 'video' in error_msg.lower():
-            return {
-                'success': False,
-                'error': 'This video is age-restricted and cannot be accessed.'
-            }
-        elif 'Video unavailable' in error_msg or 'This video is unavailable' in error_msg:
-            return {
-                'success': False,
-                'error': 'This video is unavailable or has been removed.'
-            }
-        else:
-            return {
-                'success': False,
-                'error': f'Failed to extract video info: {error_msg}'
-            }
+            
+            with YoutubeDL(fallback_opts) as ydl:
+                info = ydl.extract_info(url, download=False)
+                
+                if info is None or not info.get('title'):
+                    raise Exception("Fallback also failed")
+                
+                return {
+                    'success': True,
+                    'data': {
+                        'id': info.get('id', ''),
+                        'title': info.get('title', ''),
+                        'description': info.get('description', ''),
+                        'duration': info.get('duration', 0),
+                        'thumbnail': info.get('thumbnail', ''),
+                        'uploader': info.get('uploader', ''),
+                        'upload_date': info.get('upload_date', ''),
+                        'webpage_url': info.get('webpage_url', url),
+                        'view_count': info.get('view_count', 0),
+                        'like_count': info.get('like_count', 0),
+                        'comment_count': info.get('comment_count', 0)
+                    }
+                }
+        except Exception as fallback_error:
+            print(f"DEBUG: Fallback also failed: {fallback_error}", file=sys.stderr)
+            
+            # Provide more specific error messages - be more precise with detection
+            if '403' in error_msg or 'Forbidden' in error_msg:
+                return {
+                    'success': False,
+                    'error': 'YouTube is blocking automated access. Please try again later or use a different video.'
+                }
+            elif 'Private video' in error_msg or 'This video is private' in error_msg:
+                return {
+                    'success': False,
+                    'error': 'This video is private and cannot be accessed.'
+                }
+            elif 'age-restricted' in error_msg.lower() and 'video' in error_msg.lower():
+                return {
+                    'success': False,
+                    'error': 'This video is age-restricted and cannot be accessed.'
+                }
+            elif 'Video unavailable' in error_msg or 'This video is unavailable' in error_msg:
+                return {
+                    'success': False,
+                    'error': 'This video is unavailable or has been removed.'
+                }
+            else:
+                return {
+                    'success': False,
+                    'error': f'Failed to extract video info: {error_msg}'
+                }
 
 def download_video(url, output_path, filename=None, audio_only=False):
     """Download a single YouTube video or audio and return result"""
